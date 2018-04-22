@@ -2,6 +2,7 @@ defmodule Tesseract.Tree.R.Insert do
   alias Tesseract.Geometry.Box
   alias Tesseract.Tree.R.Util
   alias Tesseract.Tree.R.Split
+  alias Tesseract.Ext.EnumExt
 
   def insert(root, cfg, new_entries) when is_list(new_entries) do
     new_tree =

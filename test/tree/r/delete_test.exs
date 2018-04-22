@@ -2,7 +2,6 @@ defmodule Tesseract.Tree.R.DeleteTest do
   alias Tesseract.Tree.R
   alias Tesseract.Tree.R.Validation
   alias Tesseract.Tree.R.Util
-  alias Tesseract.Geometry.Box
 
   use ExUnit.Case, async: true
 

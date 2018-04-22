@@ -2,8 +2,6 @@ defmodule Tesseract.Tree.R.InsertTest do
   alias Tesseract.Tree.R
   alias Tesseract.Tree.R.Util
   alias Tesseract.Tree.R.Validation
-  alias Tesseract.Geometry.Point3D
-  alias Tesseract.Geometry.Box
 
   use ExUnit.Case, async: true
 
