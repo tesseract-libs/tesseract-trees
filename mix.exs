@@ -7,7 +7,16 @@ defmodule TesseractTrees.MixProject do
       version: "0.1.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+
+      organisation: "Tesseract Games",
+      licences: ["MIT"],
+      maintainers: ["Urban Soban"],
+      links: {
+        "tesseract.games" => "http://tesseract.games"
+      },
+      source_url: "https://github.com/tesseract-libs/tesseract-trees",
+      homepage_url: "http://tesseract.games"
     ]
   end
 
