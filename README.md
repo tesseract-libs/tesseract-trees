@@ -5,6 +5,7 @@ Tempo-spatial indexing structures implemented in Elixir.
 Current implementation status:
 
 - [x] R-tree
+- [ ] R*-tree
 - [ ] TPR-tree
 - [ ] R^{PPF} tree
 
