@@ -9,12 +9,6 @@ defmodule TesseractTrees.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
-      organisation: "Tesseract Games",
-      licences: ["MIT"],
-      maintainers: ["Urban Soban"],
-      links: {
-        "tesseract.games" => "http://tesseract.games"
-      },
       source_url: "https://github.com/tesseract-libs/tesseract-trees",
       homepage_url: "http://tesseract.games"
     ]
@@ -32,6 +26,22 @@ defmodule TesseractTrees.MixProject do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
+    ]
+  end
+
+  defp description() do
+    "Tempo-spatial indexing structures implemented in Elixir."
+  end
+
+  defp package() do
+    [
+      name: "tesseract_trees",
+      maintainers: ["Urban Soban"],
+      licences: ["MIT"],
+      links: %{
+        "tesseract.games" => "http://tesseract.games"
+      },
+      organisation: "tesseract",
     ]
   end
 end
