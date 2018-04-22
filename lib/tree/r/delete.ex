@@ -35,7 +35,7 @@ defmodule Tesseract.Tree.R.Delete do
     end
   end
 
-  defp delete_entry({:internal, entries} = node, cfg, {entry_mbb, _} = entry, depth) do
+  defp delete_entry({:internal, entries} = node, cfg, entry, depth) do
     subtree_result = delete_entry_from_subtree(entries, cfg, entry, depth)
 
     case subtree_result do
@@ -61,7 +61,7 @@ defmodule Tesseract.Tree.R.Delete do
   defp delete_entry_from_subtree(entries, cfg, {entry_mbb, _} = entry, depth) do
     entries
     |> Enum.with_index
-    |> Enum.reduce_while(nil, fn {{mbb, subnode}, index}, acc -> 
+    |> Enum.reduce_while(nil, fn {{mbb, subnode}, index}, _ -> 
       if Box.intersects(entry_mbb, mbb) do
         case delete_entry(subnode, cfg, entry, depth + 1) do
           {:no_match, _} ->

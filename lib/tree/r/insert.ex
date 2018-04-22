@@ -33,7 +33,7 @@ defmodule Tesseract.Tree.R.Insert do
     |> post_insert(cfg, :internal)
   end
 
-  defp insert_entry_into_subtree(entries, cfg, {new_entry_mbb, _} = new_entry) do
+  defp insert_entry_into_subtree(entries, cfg, new_entry) do
     {{_, chosen_node}, index} = choose_insert_entry(entries, new_entry)
 
     case insert_entry(chosen_node, cfg, new_entry) do
