@@ -25,7 +25,7 @@ defmodule TesseractTrees.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:tesseract_geometry, "~> 0.1.0"},
+      {:tesseract_geometry, "~> 0.1.1"},
       {:tesseract_ext, "~> 0.1.0"},
     ]
   end

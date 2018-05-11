@@ -53,11 +53,11 @@ defmodule Tesseract.Tree.R.QueryTest do
             
             true = 
                 results
-                |> Enum.all?(fn {mbb, _} ->  Box.intersects(search_box, mbb) end)
+                |> Enum.all?(fn {mbb, _} ->  Box.intersects?(search_box, mbb) end)
             
             true = 
                 results
-                |> Enum.filter(fn {mbb, _} -> Box.intersects(search_box, mbb) end)
+                |> Enum.filter(fn {mbb, _} -> Box.intersects?(search_box, mbb) end)
                 |> Enum.all?(&(Enum.member?(results, &1)))
         end)
       end

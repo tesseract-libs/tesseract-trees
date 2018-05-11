@@ -1,5 +1,6 @@
 defmodule Tesseract.Tree.R.Split do
   alias Tesseract.Geometry.Box
+  alias Tesseract.Tree.R.Util
 
   def unpack_split({{_, g1_entries}, {_, g2_entries}}) do
     {g1_entries, g2_entries}
@@ -52,7 +53,7 @@ defmodule Tesseract.Tree.R.Split do
 
   def pick_seed_entries(entries) when is_list(entries) do
     wasted_volume = fn {{mbb_a, _} = a, {mbb_b, _} = b} ->
-      combined_mbb = Box.add(mbb_a, mbb_b)
+      combined_mbb = Box.union(mbb_a, mbb_b)
       wasted_v = Box.volume(combined_mbb) - Box.volume(mbb_a) - Box.volume(mbb_b)
       {wasted_v, {a, b}}
     end
@@ -73,8 +74,8 @@ defmodule Tesseract.Tree.R.Split do
   defp pick_next_entry(entries, {g1_mbb, _}, {g2_mbb, _}) do
     wasted_volume_diff = fn {mbb, _} = entry ->
       mbb_volume = Box.volume(mbb)
-      g1_wasted_volume = Box.volume(Box.add(g1_mbb, mbb)) - mbb_volume
-      g2_wasted_volume = Box.volume(Box.add(g2_mbb, mbb)) - mbb_volume
+      g1_wasted_volume = Box.volume(Box.union(g1_mbb, mbb)) - mbb_volume
+      g2_wasted_volume = Box.volume(Box.union(g2_mbb, mbb)) - mbb_volume
 
       {abs(g1_wasted_volume - g2_wasted_volume), entry}
     end
@@ -90,12 +91,12 @@ defmodule Tesseract.Tree.R.Split do
   end
 
   defp insert_into_group({group_mbb, group_entries}, {entry_mbb, _} = entry) do
-    {Box.add(group_mbb, entry_mbb), [entry | group_entries]}
+    {Box.union(group_mbb, entry_mbb), [entry | group_entries]}
   end
 
   defp pick_group({entry_mbb, _}, {g1_mbb, g1_entries} = group1, {g2_mbb, g2_entries} = group2) do
-    g1_volume_increase = Box.volume_increase(g1_mbb, entry_mbb)
-    g2_volume_increase = Box.volume_increase(g2_mbb, entry_mbb)
+    g1_volume_increase = Util.box_volume_increase(g1_mbb, entry_mbb)
+    g2_volume_increase = Util.box_volume_increase(g2_mbb, entry_mbb)
 
     cond do
       # By minimal group MBB volume increase.

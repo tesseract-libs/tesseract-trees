@@ -2,15 +2,19 @@ defmodule Tesseract.Tree.R.Util do
   alias Tesseract.Geometry.Box
   alias Tesseract.Geometry.Point3D
 
-  def entry_value({mbb, value}) do
+  def entry_mbb({mbb, _}) do
+    mbb
+  end
+
+  def entry_value({_, value}) do
     value
   end
 
   def internal_entry({_, [_ | _] = entries} = node) do
     mbb =
       entries
-      |> Enum.map(&elem(&1, 0))
-      |> Box.add()
+      |> Enum.map(&entry_mbb/1)
+      |> Box.union()
 
     {mbb, node}
   end
@@ -28,7 +32,7 @@ defmodule Tesseract.Tree.R.Util do
     tree_depth(tree, 0)
   end
 
-  defp tree_depth({:leaf, entries}, d) do
+  defp tree_depth({:leaf, _}, d) do
     d
   end
 
@@ -46,4 +50,10 @@ defmodule Tesseract.Tree.R.Util do
     |> Enum.sum()
   end
   def count_entries(_), do: 1
+
+  def box_volume_increase(box_a, box_b) do
+    combined = Box.union(box_a, box_b)
+
+    Box.volume(combined) - Box.volume(box_a)
+  end
 end

@@ -62,7 +62,7 @@ defmodule Tesseract.Tree.R.Delete do
     entries
     |> Enum.with_index
     |> Enum.reduce_while(nil, fn {{mbb, subnode}, index}, _ -> 
-      if Box.intersects(entry_mbb, mbb) do
+      if Box.intersects?(entry_mbb, mbb) do
         case delete_entry(subnode, cfg, entry, depth + 1) do
           {:no_match, _} ->
             {:cont, nil}

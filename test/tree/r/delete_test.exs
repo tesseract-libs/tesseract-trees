@@ -139,7 +139,7 @@ defmodule Tesseract.Tree.R.DeleteTest do
   end
 
   test "Delete test: remove an element from a leaf, reducing the tree to root node only" do
-    cfg = %{min_entries: 2, max_entries: 4}
+    {_, cfg} = R.make(4)
 
     delete_entry = {{{5, 39, 24}, {5, 39, 24}}, 14}
     t = {:internal,[

@@ -5,7 +5,7 @@ defmodule Tesseract.Tree.R do
   defdelegate delete(root, cfg, entry), to: Tesseract.Tree.R.Delete
 
   def make(max_entries) do
-    cfg = %{min_entries: trunc(max_entries/2), max_entries: max_entries}
+    cfg = %{min_entries: trunc(max_entries/2), max_entries: max_entries, type: :r}
 
     {{:leaf, []}, cfg}
   end

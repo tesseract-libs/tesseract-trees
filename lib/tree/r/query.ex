@@ -13,6 +13,6 @@ defmodule Tesseract.Tree.R.Query do
   end
 
   defp query_test({mbb, _}, query_box) do
-    Box.intersects(query_box, mbb)
+    Box.intersects?(query_box, mbb)
   end
 end

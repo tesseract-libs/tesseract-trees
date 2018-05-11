@@ -34,7 +34,7 @@ defmodule Tesseract.Tree.R.Insert do
   end
 
   defp insert_entry_into_subtree(entries, cfg, new_entry) do
-    {{_, chosen_node}, index} = choose_insert_entry(entries, new_entry)
+    {{_, chosen_node}, index} = choose_insert_entry(entries, cfg, new_entry)
 
     case insert_entry(chosen_node, cfg, new_entry) do
       {:ok, {_, [_ | _]} = child_node} ->
@@ -60,7 +60,7 @@ defmodule Tesseract.Tree.R.Insert do
   end
 
   def insert_entry_at({:internal, entries}, cfg, entry, entry_depth, depth) do
-    {{_, chosen_node}, index} = choose_insert_entry(entries, entry)
+    {{_, chosen_node}, index} = choose_insert_entry(entries, cfg, entry)
 
     new_entries = case insert_entry_at(chosen_node, cfg, entry, entry_depth, depth + 1) do
       {:ok, child_node} ->
@@ -75,17 +75,31 @@ defmodule Tesseract.Tree.R.Insert do
     |> post_insert(cfg, :internal)
   end
 
-  defp choose_insert_entry(entries, {new_entry_mbb, _}) do
-    EnumExt.min_with_index(
-      entries,
+  def choose_insert_entry(entries, %{type: :r}, {new_entry_mbb, _}) do
+    entries
+    |> EnumExt.min_with_index(
       fn {entry_mbb, _} ->
-        Box.volume_increase(entry_mbb, new_entry_mbb)
+        Util.box_volume_increase(entry_mbb, new_entry_mbb)
       end,
       fn {entry_mbb, _} ->
         Box.volume(entry_mbb)
-      end
-    )
+      end)
   end
+
+  # def choose_insert_entry([{_, {:leaf, _}} | _], %{type: :rstar}, {new_entry_mbb, _}) do
+  #   entries
+  #   |> EnumExt.min_with_index(
+  #     fn {_, {:leaf, leaf_entries}} ->
+
+  #     end,
+  #     fn {entry_mbb, _} ->
+  #       Box.volume(entry_mbb)
+  #     end)
+  # end
+
+  # def choose_insert_entry(entries, %{type: :rstar} = cfg, new_entry) do
+  #   choose_insert_entry(entries, %{cfg | type: :r}, new_entry)
+  # end
 
   defp post_insert(entries, cfg, type) do
     if length(entries) > cfg.max_entries do
