@@ -1,6 +1,15 @@
 defmodule Tesseract.Tree.R.Util do
   alias Tesseract.Geometry.Box
   alias Tesseract.Geometry.Point3D
+  alias Tesseract.Math.Vec3
+
+  def point2entry({label, point}, padding \\ 0) do
+    {Point3D.mbb(point, padding), label}
+  end
+
+  def points2entries(points, padding \\ 0) when is_list(points) do
+    points |> Enum.map(&(point2entry(&1, padding)))
+  end
 
   def entry_mbb({mbb, _}) do
     mbb
@@ -10,22 +19,16 @@ defmodule Tesseract.Tree.R.Util do
     value
   end
 
+  # TODO: rename to entries_mbb/1
+  def union_mbb(entries) when is_list(entries) do
+    entries
+    |> Enum.map(&entry_mbb/1)
+    |> Box.union()
+  end
+
+  # TODO: rename to wrap_mbb/1
   def internal_entry({_, [_ | _] = entries} = node) do
-    mbb =
-      entries
-      |> Enum.map(&entry_mbb/1)
-      |> Box.union()
-
-    {mbb, node}
-  end
-
-  def point2entry({label, point}, padding \\ 0) do
-    {Point3D.mbb(point, padding), label}
-  end
-
-  def points2entries(points, padding \\ 0) do
-    points
-    |> Enum.map(&(point2entry(&1, padding)))
+    {union_mbb(entries), node}
   end
 
   def depth(tree) do
@@ -55,5 +58,30 @@ defmodule Tesseract.Tree.R.Util do
     combined = Box.union(box_a, box_b)
 
     Box.volume(combined) - Box.volume(box_a)
+  end
+
+  def box_intersection_volume(box, other_boxes) when is_list(other_boxes) do
+      other_boxes
+      |> Enum.map(&Box.intersection_volume(box, &1))
+      |> Enum.sum
+  end
+
+  # Computes min/max coordinates along given axis
+  # TODO: rename to mbb_axis_minmax (mbb_minmax could compute triple of min/max for {X, Y, Z})
+  def mbb_minmax({mbb_point_a, mbb_point_b}, axis) do
+    mbb_point_a_axis_value = elem(mbb_point_a, axis)
+    mbb_point_b_axis_value = elem(mbb_point_b, axis)
+
+    {
+      min(mbb_point_a_axis_value, mbb_point_b_axis_value),
+      max(mbb_point_a_axis_value, mbb_point_b_axis_value)
+    }
+  end
+
+  # Computes a "margin" for MBB box. That is, a sum of length of all its edges.
+  def mbb_margin({{x1, y1, z1} = a, {x2, y2, z2}}) do
+    4 * Vec3.length(Vec3.subtract({x2, y1, z1}, a)) +
+    4 * Vec3.length(Vec3.subtract({x1, y1, z2}, a)) +
+    4 * Vec3.length(Vec3.subtract({x1, y2, z1}, a))
   end
 end

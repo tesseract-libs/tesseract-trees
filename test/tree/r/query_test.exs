@@ -1,12 +1,13 @@
 defmodule Tesseract.Tree.R.QueryTest do
   alias Tesseract.Tree.R
+  alias Tesseract.Tree.RStar
   alias Tesseract.Tree.R.Validation
   alias Tesseract.Tree.R.Util
   alias Tesseract.Geometry.Box
 
   use ExUnit.Case, async: true
 
-  test "Query test: simple #1" do
+  test "[R] Query test: simple #1" do
     points = [
       a: {1, 1, 1},
       b: {2, 2, 2},
@@ -26,7 +27,7 @@ defmodule Tesseract.Tree.R.QueryTest do
   end
 
   @tag :long_running
-  test "Query test: random querying on 1000 entries." do
+  test "[R] Query test: 1000 random queries on 1000 entries (on 100 different trees)." do
     single_run = fn () ->
         entries =
         1..1000
@@ -66,4 +67,85 @@ defmodule Tesseract.Tree.R.QueryTest do
     |> Enum.each(fn _ -> single_run.() end)
   end
 
+  @tag :long_running
+  test "[R] Query test: 1000 random queries on 1000 entries (on 1 tree)." do
+    entries =
+      1..1000
+      |> Enum.map(fn n ->
+          loc = {:rand.uniform(100), :rand.uniform(100), :rand.uniform(100)}
+          {n, loc}
+      end)
+      |> Util.points2entries
+
+    {tree, cfg} = R.make(4)
+    {:ok, tree} = R.insert(tree, cfg, entries)
+    true = Validation.tree_valid?(tree, cfg)
+
+    single_run = fn () ->
+        # Random search
+        1..1000
+        |> Enum.map(fn _ -> 
+            a = {:rand.uniform(100), :rand.uniform(100), :rand.uniform(100)}
+            b = {:rand.uniform(100), :rand.uniform(100), :rand.uniform(100)}
+
+            {min(a, b), max(a, b)}
+        end)
+        |> Enum.each(fn search_box -> 
+            results = R.query(tree, search_box)
+            
+            true = 
+                results
+                |> Enum.all?(fn {mbb, _} ->  Box.intersects?(search_box, mbb) end)
+            
+            true = 
+                results
+                |> Enum.filter(fn {mbb, _} -> Box.intersects?(search_box, mbb) end)
+                |> Enum.all?(&(Enum.member?(results, &1)))
+        end)
+      end
+    
+    1..100
+    |> Enum.each(fn _ -> single_run.() end)
+  end
+
+  @tag :long_running
+  test "[R*] Query test: 1000 random queries on 1000 entries (on 1 tree)." do
+    entries =
+      1..1000
+      |> Enum.map(fn n ->
+          loc = {:rand.uniform(100), :rand.uniform(100), :rand.uniform(100)}
+          {n, loc}
+      end)
+      |> Util.points2entries
+
+    {tree, cfg} = RStar.make(4)
+    {:ok, tree} = RStar.insert(tree, cfg, entries)
+    true = Validation.tree_valid?(tree, cfg)
+
+    single_run = fn () ->
+        # Random search
+        1..1000
+        |> Enum.map(fn _ -> 
+            a = {:rand.uniform(100), :rand.uniform(100), :rand.uniform(100)}
+            b = {:rand.uniform(100), :rand.uniform(100), :rand.uniform(100)}
+
+            {min(a, b), max(a, b)}
+        end)
+        |> Enum.each(fn search_box -> 
+            results = RStar.query(tree, search_box)
+            
+            true = 
+                results
+                |> Enum.all?(fn {mbb, _} ->  Box.intersects?(search_box, mbb) end)
+            
+            true = 
+                results
+                |> Enum.filter(fn {mbb, _} -> Box.intersects?(search_box, mbb) end)
+                |> Enum.all?(&(Enum.member?(results, &1)))
+        end)
+      end
+    
+    1..100
+    |> Enum.each(fn _ -> single_run.() end)
+  end
 end

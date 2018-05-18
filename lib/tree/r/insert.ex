@@ -22,6 +22,17 @@ defmodule Tesseract.Tree.R.Insert do
     {:internal, [Util.internal_entry(node1), Util.internal_entry(node2)]}
   end
 
+  defp post_insert(entries, %{split_fn: {module, func}} = cfg, type) do
+    if length(entries) > cfg.max_entries do
+      split_entries = apply(module, func, [entries, cfg])
+      {g1_entries, g2_entries} = Split.unpack_split(split_entries)
+      
+      {:split, {{type, g1_entries}, {type, g2_entries}}}
+    else
+      {:ok, {type, entries}}
+    end
+  end
+
   defp insert_entry({:leaf, leaf_entries}, cfg, new_entry) do
     [new_entry | leaf_entries]
     |> post_insert(cfg, :leaf)
@@ -34,7 +45,9 @@ defmodule Tesseract.Tree.R.Insert do
   end
 
   defp insert_entry_into_subtree(entries, cfg, new_entry) do
-    {{_, chosen_node}, index} = choose_insert_entry(entries, cfg, new_entry)
+    %{choose_insert_entry: {module, fun}} = cfg
+
+    {{_, chosen_node}, index} = apply(module, fun, [entries, cfg, new_entry])
 
     case insert_entry(chosen_node, cfg, new_entry) do
       {:ok, {_, [_ | _]} = child_node} ->
@@ -60,7 +73,9 @@ defmodule Tesseract.Tree.R.Insert do
   end
 
   def insert_entry_at({:internal, entries}, cfg, entry, entry_depth, depth) do
-    {{_, chosen_node}, index} = choose_insert_entry(entries, cfg, entry)
+    %{choose_insert_entry: {module, fun}} = cfg
+    
+    {{_, chosen_node}, index} = apply(module, fun, [entries, cfg, entry])
 
     new_entries = case insert_entry_at(chosen_node, cfg, entry, entry_depth, depth + 1) do
       {:ok, child_node} ->
@@ -84,33 +99,5 @@ defmodule Tesseract.Tree.R.Insert do
       fn {entry_mbb, _} ->
         Box.volume(entry_mbb)
       end)
-  end
-
-  # def choose_insert_entry([{_, {:leaf, _}} | _], %{type: :rstar}, {new_entry_mbb, _}) do
-  #   entries
-  #   |> EnumExt.min_with_index(
-  #     fn {_, {:leaf, leaf_entries}} ->
-
-  #     end,
-  #     fn {entry_mbb, _} ->
-  #       Box.volume(entry_mbb)
-  #     end)
-  # end
-
-  # def choose_insert_entry(entries, %{type: :rstar} = cfg, new_entry) do
-  #   choose_insert_entry(entries, %{cfg | type: :r}, new_entry)
-  # end
-
-  defp post_insert(entries, cfg, type) do
-    if length(entries) > cfg.max_entries do
-      {g1_entries, g2_entries} =
-        entries
-        |> Split.split(cfg)
-        |> Split.unpack_split
-
-      {:split, {{type, g1_entries}, {type, g2_entries}}}
-    else
-      {:ok, {type, entries}}
-    end
   end
 end
