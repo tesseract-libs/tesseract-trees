@@ -45,7 +45,7 @@ defmodule Tesseract.Tree.R.Insert do
   end
 
   defp insert_entry_into_subtree(entries, cfg, new_entry) do
-    %{choose_insert_entry: {module, fun}} = cfg
+    %{choose_insert_entry_fn: {module, fun}} = cfg
 
     {{_, chosen_node}, index} = apply(module, fun, [entries, cfg, new_entry])
 
@@ -73,7 +73,7 @@ defmodule Tesseract.Tree.R.Insert do
   end
 
   def insert_entry_at({:internal, entries}, cfg, entry, entry_depth, depth) do
-    %{choose_insert_entry: {module, fun}} = cfg
+    %{choose_insert_entry_fn: {module, fun}} = cfg
     
     {{_, chosen_node}, index} = apply(module, fun, [entries, cfg, entry])
 
