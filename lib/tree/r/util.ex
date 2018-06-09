@@ -31,6 +31,16 @@ defmodule Tesseract.Tree.R.Util do
     {union_mbb(entries), node}
   end
 
+  def wrap_depth(entries, depth) when is_list(entries) do
+    depth
+    |> List.duplicate(length(entries))
+    |> Enum.zip(entries)
+  end
+
+  def wrap_depth(entry, depth) do
+    {depth, entry}
+  end
+
   def depth(tree) do
     tree_depth(tree, 0)
   end

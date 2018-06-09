@@ -3,6 +3,10 @@ defmodule Tesseract.Tree.RStar.Split do
   alias Tesseract.Geometry.Box
   alias Tesseract.Tree.R.Util
 
+  def unpack_split({{_, g1_entries}, {_, g2_entries}}) do
+    {g1_entries, g2_entries}
+  end
+
   def split(entries, cfg) do
     axis = choose_split_axis(entries, cfg)
     {g1, g2} = choose_split_index(entries, cfg, axis)

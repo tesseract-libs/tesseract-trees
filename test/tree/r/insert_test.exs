@@ -138,6 +138,23 @@ defmodule Tesseract.Tree.R.InsertTest do
     true = Validation.tree_valid?(new_tree, cfg)
   end
 
+  test "[R*] Insert enough entries to cause a reinsert", _ do
+    {tree, cfg} = RStar.make(4)
+
+    entries =
+      1..10
+      |> Enum.map(fn n ->
+        loc = {:rand.uniform(100), :rand.uniform(100), :rand.uniform(100)}
+        {n, loc}
+      end)
+      |> Util.points2entries
+      
+    {:ok, new_tree} = RStar.insert(tree, cfg, entries)
+
+    true = Validation.tree_valid?(new_tree, cfg)
+    10 = Util.count_entries(new_tree)
+  end
+
   test "[R*] Insert 100 entries.", _ do
     {tree, cfg} = RStar.make(4)
 
