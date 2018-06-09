@@ -1,6 +1,6 @@
 defmodule Tesseract.Tree.R.Delete do
   alias Tesseract.Tree.R.Util
-  alias Tesseract.Geometry.Box
+  alias Tesseract.Geometry.AABB3
 
   def delete(root, cfg, entry) do
     {new_root, eliminated_nodes}  = case delete_entry(root, cfg, entry, 0) do
@@ -61,7 +61,7 @@ defmodule Tesseract.Tree.R.Delete do
     entries
     |> Enum.with_index
     |> Enum.reduce_while(nil, fn {{mbb, subnode}, index}, _ -> 
-      if Box.intersects?(entry_mbb, mbb) do
+      if AABB3.intersects?(entry_mbb, mbb) do
         case delete_entry(subnode, cfg, entry, depth + 1) do
           {:no_match, _} ->
             {:cont, nil}

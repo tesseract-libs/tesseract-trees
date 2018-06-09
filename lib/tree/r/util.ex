@@ -1,5 +1,5 @@
 defmodule Tesseract.Tree.R.Util do
-  alias Tesseract.Geometry.Box
+  alias Tesseract.Geometry.AABB3
   alias Tesseract.Geometry.Point3D
   alias Tesseract.Math.Vec3
 
@@ -21,7 +21,8 @@ defmodule Tesseract.Tree.R.Util do
   def entries_mbb(entries) when is_list(entries) do
     entries
     |> Enum.map(&entry_mbb/1)
-    |> Box.union()
+    |> AABB3.union()
+    |> AABB3.fix()
   end
 
   def wrap_mbb({_, entries} = node) when is_list(entries) do
@@ -62,14 +63,14 @@ defmodule Tesseract.Tree.R.Util do
   def count_entries(_), do: 1
 
   def box_volume_increase(box_a, box_b) do
-    combined = Box.union(box_a, box_b)
+    combined = AABB3.union(box_a, box_b)
 
-    Box.volume(combined) - Box.volume(box_a)
+    AABB3.volume(combined) - AABB3.volume(box_a)
   end
 
   def box_intersection_volume(box, other_boxes) when is_list(other_boxes) do
       other_boxes
-      |> Enum.map(&Box.intersection_volume(box, &1))
+      |> Enum.map(&AABB3.intersection_volume(box, &1))
       |> Enum.sum
   end
 
@@ -84,7 +85,7 @@ defmodule Tesseract.Tree.R.Util do
     }
   end
 
-  # Computes a "margin" for MBB box. That is, a sum of length of all its edges.
+  # Computes a "margin" for AABB3. That is, a sum of length of all its edges.
   def mbb_margin({{x1, y1, z1} = a, {x2, y2, z2}}) do
     4 * Vec3.length(Vec3.subtract({x2, y1, z1}, a)) +
     4 * Vec3.length(Vec3.subtract({x1, y1, z2}, a)) +

@@ -1,6 +1,6 @@
 defmodule Tesseract.Tree.RStar.Insert do
   alias Tesseract.Ext.EnumExt
-  alias Tesseract.Geometry.Box
+  alias Tesseract.Geometry.AABB3
   alias Tesseract.Math.Vec3
   alias Tesseract.Tree.R.Util
   alias Tesseract.Tree.RStar.Split
@@ -51,10 +51,10 @@ defmodule Tesseract.Tree.RStar.Insert do
   end
 
   defp compute_reinsert_entries(entries, %{reinsert_p: p}) do
-    entries_mbb_center = Box.center(Util.entries_mbb(entries))
+    entries_mbb_center = AABB3.center(Util.entries_mbb(entries))
 
     dist = fn {entry_mbb, _} ->
-      entry_mbb_center = Box.center(entry_mbb)
+      entry_mbb_center = AABB3.center(entry_mbb)
       entry_mbb_center |> Vec3.subtract(entries_mbb_center) |> Vec3.length
     end
 
@@ -153,7 +153,7 @@ defmodule Tesseract.Tree.RStar.Insert do
         Util.box_volume_increase(entry_mbb, new_entry_mbb)
       end,
       fn {entry_mbb, _} ->
-        Box.volume(entry_mbb)
+        AABB3.volume(entry_mbb)
       end
     )
   end

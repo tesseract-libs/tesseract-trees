@@ -3,7 +3,7 @@ defmodule Tesseract.Tree.R.QueryTest do
   alias Tesseract.Tree.RStar
   alias Tesseract.Tree.R.Validation
   alias Tesseract.Tree.R.Util
-  alias Tesseract.Geometry.Box
+  alias Tesseract.Geometry.AABB3
 
   use ExUnit.Case, async: true
 
@@ -54,11 +54,11 @@ defmodule Tesseract.Tree.R.QueryTest do
             
             true = 
                 results
-                |> Enum.all?(fn {mbb, _} ->  Box.intersects?(search_box, mbb) end)
+                |> Enum.all?(fn {mbb, _} ->  AABB3.intersects?(search_box, mbb) end)
             
             true = 
                 results
-                |> Enum.filter(fn {mbb, _} -> Box.intersects?(search_box, mbb) end)
+                |> Enum.filter(fn {mbb, _} -> AABB3.intersects?(search_box, mbb) end)
                 |> Enum.all?(&(Enum.member?(results, &1)))
         end)
       end
@@ -95,11 +95,11 @@ defmodule Tesseract.Tree.R.QueryTest do
             
             true = 
                 results
-                |> Enum.all?(fn {mbb, _} ->  Box.intersects?(search_box, mbb) end)
+                |> Enum.all?(fn {mbb, _} ->  AABB3.intersects?(search_box, mbb) end)
             
             true = 
                 results
-                |> Enum.filter(fn {mbb, _} -> Box.intersects?(search_box, mbb) end)
+                |> Enum.filter(fn {mbb, _} -> AABB3.intersects?(search_box, mbb) end)
                 |> Enum.all?(&(Enum.member?(results, &1)))
         end)
       end
@@ -136,11 +136,11 @@ defmodule Tesseract.Tree.R.QueryTest do
             
             true = 
                 results
-                |> Enum.all?(fn {mbb, _} ->  Box.intersects?(search_box, mbb) end)
+                |> Enum.all?(fn {mbb, _} ->  AABB3.intersects?(search_box, mbb) end)
             
             true = 
                 results
-                |> Enum.filter(fn {mbb, _} -> Box.intersects?(search_box, mbb) end)
+                |> Enum.filter(fn {mbb, _} -> AABB3.intersects?(search_box, mbb) end)
                 |> Enum.all?(&(Enum.member?(results, &1)))
         end)
       end

@@ -1,5 +1,5 @@
 defmodule Tesseract.Tree.R.Split do
-  alias Tesseract.Geometry.Box
+  alias Tesseract.Geometry.AABB3
   alias Tesseract.Tree.R.Util
 
   def unpack_split({{_, g1_entries}, {_, g2_entries}}) do
@@ -53,8 +53,8 @@ defmodule Tesseract.Tree.R.Split do
 
   def pick_seed_entries(entries) when is_list(entries) do
     wasted_volume = fn {{mbb_a, _} = a, {mbb_b, _} = b} ->
-      combined_mbb = Box.union(mbb_a, mbb_b)
-      wasted_v = Box.volume(combined_mbb) - Box.volume(mbb_a) - Box.volume(mbb_b)
+      combined_mbb = AABB3.union(mbb_a, mbb_b)
+      wasted_v = AABB3.volume(combined_mbb) - AABB3.volume(mbb_a) - AABB3.volume(mbb_b)
       {wasted_v, {a, b}}
     end
 
@@ -73,9 +73,9 @@ defmodule Tesseract.Tree.R.Split do
 
   defp pick_next_entry(entries, {g1_mbb, _}, {g2_mbb, _}) do
     wasted_volume_diff = fn {mbb, _} = entry ->
-      mbb_volume = Box.volume(mbb)
-      g1_wasted_volume = Box.volume(Box.union(g1_mbb, mbb)) - mbb_volume
-      g2_wasted_volume = Box.volume(Box.union(g2_mbb, mbb)) - mbb_volume
+      mbb_volume = AABB3.volume(mbb)
+      g1_wasted_volume = AABB3.volume(AABB3.union(g1_mbb, mbb)) - mbb_volume
+      g2_wasted_volume = AABB3.volume(AABB3.union(g2_mbb, mbb)) - mbb_volume
 
       {abs(g1_wasted_volume - g2_wasted_volume), entry}
     end
@@ -91,7 +91,7 @@ defmodule Tesseract.Tree.R.Split do
   end
 
   defp insert_into_group({group_mbb, group_entries}, {entry_mbb, _} = entry) do
-    {Box.union(group_mbb, entry_mbb), [entry | group_entries]}
+    {AABB3.union(group_mbb, entry_mbb) |> AABB3.fix(), [entry | group_entries]}
   end
 
   defp pick_group({entry_mbb, _}, {g1_mbb, g1_entries} = group1, {g2_mbb, g2_entries} = group2) do
@@ -109,10 +109,10 @@ defmodule Tesseract.Tree.R.Split do
       true ->
         # Resolve ties by selecting the group with least volume.
         cond do
-          Box.volume(g1_mbb) < Box.volume(g2_mbb) ->
+          AABB3.volume(g1_mbb) < AABB3.volume(g2_mbb) ->
             group1
 
-          Box.volume(g2_mbb) < Box.volume(g1_mbb) ->
+          AABB3.volume(g2_mbb) < AABB3.volume(g1_mbb) ->
             group2
 
           true ->

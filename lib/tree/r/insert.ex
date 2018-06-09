@@ -1,5 +1,5 @@
 defmodule Tesseract.Tree.R.Insert do
-  alias Tesseract.Geometry.Box
+  alias Tesseract.Geometry.AABB3
   alias Tesseract.Tree.R.Util
   alias Tesseract.Tree.R.Split
   alias Tesseract.Ext.EnumExt
@@ -95,7 +95,7 @@ defmodule Tesseract.Tree.R.Insert do
         Util.box_volume_increase(entry_mbb, new_entry_mbb)
       end,
       fn {entry_mbb, _} ->
-        Box.volume(entry_mbb)
+        AABB3.volume(entry_mbb)
       end)
   end
 end

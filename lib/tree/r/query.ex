@@ -1,5 +1,5 @@
 defmodule Tesseract.Tree.R.Query do
-  alias Tesseract.Geometry.Box
+  alias Tesseract.Geometry.AABB3
 
   def query({:leaf, entries}, query_box) do
     entries
@@ -13,6 +13,6 @@ defmodule Tesseract.Tree.R.Query do
   end
 
   defp query_test({mbb, _}, query_box) do
-    Box.intersects?(query_box, mbb)
+    AABB3.intersects?(query_box, mbb)
   end
 end

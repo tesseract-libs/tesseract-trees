@@ -1,6 +1,6 @@
 defmodule Tesseract.Tree.RStar.Split do
   alias Tesseract.Geometry
-  alias Tesseract.Geometry.Box
+  alias Tesseract.Geometry.AABB3
   alias Tesseract.Tree.R.Util
 
   def unpack_split({{_, g1_entries}, {_, g2_entries}}) do
@@ -32,7 +32,7 @@ defmodule Tesseract.Tree.RStar.Split do
       g1_mbb = g1 |> Util.entries_mbb()
       g2_mbb = g2 |> Util.entries_mbb()
       overlap = Util.box_intersection_volume(g1_mbb, [g2_mbb])
-      volume = Box.volume(g1_mbb) + Box.volume(g2_mbb)
+      volume = AABB3.volume(g1_mbb) + AABB3.volume(g2_mbb)
 
       {overlap, volume, dist}
     end
