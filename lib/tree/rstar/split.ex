@@ -62,8 +62,8 @@ defmodule Tesseract.Tree.RStar.Split do
     sorted_entries =
       entries
       |> Enum.sort(fn {mbb_a, _}, {mbb_b, _} ->
-        {a_min, a_max} = mbb_a |> Util.mbb_minmax(axis)
-        {b_min, b_max} = mbb_b |> Util.mbb_minmax(axis)
+        {a_min, a_max} = mbb_a |> Util.mbb_axis_minmax(axis)
+        {b_min, b_max} = mbb_b |> Util.mbb_axis_minmax(axis)
 
         cond do
           a_min < b_min -> true

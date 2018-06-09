@@ -74,8 +74,7 @@ defmodule Tesseract.Tree.R.Util do
   end
 
   # Computes min/max coordinates along given axis
-  # TODO: rename to mbb_axis_minmax (mbb_minmax could compute triple of min/max for {X, Y, Z})
-  def mbb_minmax({mbb_point_a, mbb_point_b}, axis) do
+  def mbb_axis_minmax({mbb_point_a, mbb_point_b}, axis) do
     mbb_point_a_axis_value = elem(mbb_point_a, axis)
     mbb_point_b_axis_value = elem(mbb_point_b, axis)
 
