@@ -5,7 +5,7 @@ Tempo-spatial indexing structures implemented in Elixir.
 Current implementation status:
 
 - [x] R-tree
-- [ ] R*-tree
+- [x] R*-tree
 - [ ] TPR-tree
 - [ ] R^{PPF} tree
 
@@ -22,8 +22,3 @@ def deps do
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/tesseract_trees](https://hexdocs.pm/tesseract_trees).
-
