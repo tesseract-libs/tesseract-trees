@@ -18,15 +18,14 @@ defmodule Tesseract.Tree.R.Util do
   def entry_is_leaf?({_, {:leaf, _}}), do: true
   def entry_is_leaf?(_), do: false
 
-  # TODO: rename to entries_mbb/1
-  def union_mbb(entries) when is_list(entries) do
+  def entries_mbb(entries) when is_list(entries) do
     entries
     |> Enum.map(&entry_mbb/1)
     |> Box.union()
   end
 
   def wrap_mbb({_, entries} = node) when is_list(entries) do
-    {union_mbb(entries), node}
+    {entries_mbb(entries), node}
   end
 
   def wrap_depth(entries, depth) when is_list(entries) do

@@ -11,7 +11,7 @@ defmodule Tesseract.Tree.RStar.Split do
     axis = choose_split_axis(entries, cfg)
     {g1, g2} = choose_split_index(entries, cfg, axis)
 
-    {{Util.union_mbb(g1), g1}, {Util.union_mbb(g2), g2}}
+    {{Util.entries_mbb(g1), g1}, {Util.entries_mbb(g2), g2}}
   end
 
   defp choose_split_axis([{entry_mbb, _} | _] = entries, cfg) do
@@ -29,8 +29,8 @@ defmodule Tesseract.Tree.RStar.Split do
 
   defp choose_split_index(entries, cfg, axis) do
     map_distribution = fn {g1, g2} = dist ->
-      g1_mbb = g1 |> Util.union_mbb()
-      g2_mbb = g2 |> Util.union_mbb()
+      g1_mbb = g1 |> Util.entries_mbb()
+      g2_mbb = g2 |> Util.entries_mbb()
       overlap = Util.box_intersection_volume(g1_mbb, [g2_mbb])
       volume = Box.volume(g1_mbb) + Box.volume(g2_mbb)
 
@@ -49,8 +49,8 @@ defmodule Tesseract.Tree.RStar.Split do
 
   defp axis_split_score(entries, cfg, axis) do
     reduce_fn = fn {g1, g2}, sum ->
-      g1_mbb = g1 |> Util.union_mbb()
-      g2_mbb = g2 |> Util.union_mbb()
+      g1_mbb = g1 |> Util.entries_mbb()
+      g2_mbb = g2 |> Util.entries_mbb()
 
       sum + Util.mbb_margin(g1_mbb) + Util.mbb_margin(g2_mbb)
     end

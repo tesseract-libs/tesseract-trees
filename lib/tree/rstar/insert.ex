@@ -51,11 +51,11 @@ defmodule Tesseract.Tree.RStar.Insert do
   end
 
   defp compute_reinsert_entries(entries, %{reinsert_p: p}) do
-    union_mbb_center = Box.center(Util.union_mbb(entries))
+    entries_mbb_center = Box.center(Util.entries_mbb(entries))
 
     dist = fn {entry_mbb, _} ->
       entry_mbb_center = Box.center(entry_mbb)
-      entry_mbb_center |> Vec3.subtract(union_mbb_center) |> Vec3.length
+      entry_mbb_center |> Vec3.subtract(entries_mbb_center) |> Vec3.length
     end
 
     entries
