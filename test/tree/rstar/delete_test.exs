@@ -1,11 +1,11 @@
-defmodule Tesseract.Tree.R.DeleteTest do
-  alias Tesseract.Tree.R
+defmodule Tesseract.Tree.RStar.DeleteTest do
+  alias Tesseract.Tree.RStar
   alias Tesseract.Tree.R.Validation
   alias Tesseract.Tree.R.Util
 
   use ExUnit.Case, async: true
 
-  test "[R] Delete: simple case #1" do
+  test "[R*] Delete: simple case #1" do
     points = [
       a: {1, 1, 1},
       b: {2, 2, 2},
@@ -15,40 +15,18 @@ defmodule Tesseract.Tree.R.DeleteTest do
       f: {6, 6, 6}
     ]
 
-    {tree, cfg} = R.make(4)
-    {:ok, new_tree} = R.insert(tree, cfg, Util.points2entries(points))
-
-    {:internal,
-     [
-       {
-         {{3, 3, 3}, {6, 6, 6}},
-         {:leaf,
-          [
-            {{{6, 6, 6}, {6, 6, 6}}, :f},
-            {{{3, 3, 3}, {3, 3, 3}}, :c},
-            {{{4, 4, 4}, {4, 4, 4}}, :d},
-            {{{5, 5, 5}, {5, 5, 5}}, :e}
-          ]}
-       },
-       {
-         {{1, 1, 1}, {2, 2, 2}},
-         {:leaf,
-          [
-            {{{2, 2, 2}, {2, 2, 2}}, :b},
-            {{{1, 1, 1}, {1, 1, 1}}, :a}
-          ]}
-       }
-     ]} = new_tree
+    {tree, cfg} = RStar.make(4)
+    {:ok, new_tree} = RStar.insert(tree, cfg, Util.points2entries(points))
 
     6 = Util.count_entries(new_tree)
     true = Validation.tree_valid?(new_tree, cfg)
 
-    {:ok, new_tree} = R.delete(new_tree, cfg, {{{2, 2, 2}, {2, 2, 2}}, :b})
+    {:ok, new_tree} = RStar.delete(new_tree, cfg, {{{2, 2, 2}, {2, 2, 2}}, :b})
     5 = Util.count_entries(new_tree)
     true = Validation.tree_valid?(new_tree, cfg)
   end
 
-  test "[R] Delete: case #2" do
+  test "[R*] Delete: case #2" do
     points = [
       a: {1, 1, 1},
       b: {2, 2, 2},
@@ -68,78 +46,24 @@ defmodule Tesseract.Tree.R.DeleteTest do
       p: {7, 5, 4}
     ]
 
-    {tree, cfg} = R.make(4)
-    {:ok, new_tree} = R.insert(tree, cfg, Util.points2entries(points))
+    {tree, cfg} = RStar.make(4)
+    {:ok, new_tree} = RStar.insert(tree, cfg, Util.points2entries(points))
     true = Validation.tree_valid?(new_tree, cfg)
-
-    {:internal,[
-       {
-         {{1, 1, 1}, {9, 9, 3}},
-          {:internal, [
-            {
-              {{2, 2, 2}, {9, 9, 3}}, 
-              {:leaf, [
-                {{{8, 5, 3}, {8, 5, 3}}, :n},
-                {{{9, 7, 3}, {9, 7, 3}}, :m},
-                {{{2, 2, 2}, {2, 2, 2}}, :b},
-                {{{4, 9, 2}, {4, 9, 2}}, :h}
-              ]}
-            },
-            {
-              {{1, 1, 1}, {5, 7, 1}},
-              {:leaf, [
-                {{{5, 7, 1}, {5, 7, 1}}, :k},
-                {{{5, 2, 1}, {5, 2, 1}}, :l},
-                {{{1, 1, 1}, {1, 1, 1}}, :a}
-              ]}
-            }
-          ]}
-       },
-       {
-         {{2, 2, 3}, {7, 9, 9}},
-         {:internal, [
-           {
-             {{3, 3, 3}, {5, 5, 5}},
-             {:leaf, [
-                {{{3, 3, 3}, {3, 3, 3}}, :c},
-                {{{4, 4, 4}, {4, 4, 4}}, :d},
-                {{{5, 5, 5}, {5, 5, 5}}, :e}
-             ]}
-           },
-           {
-             {{2, 2, 6}, {3, 9, 7}},
-             {:leaf, [
-                {{{3, 9, 6}, {3, 9, 6}}, :i},
-                {{{2, 2, 7}, {2, 2, 7}}, :o}
-             ]}
-           },
-           {
-             {{6, 3, 3}, {7, 8, 9}},
-             {:leaf, [
-                {{{7, 5, 4}, {7, 5, 4}}, :p},
-                {{{7, 3, 9}, {7, 3, 9}}, :j},
-                {{{7, 8, 3}, {7, 8, 3}}, :g},
-                {{{6, 6, 6}, {6, 6, 6}}, :f}
-             ]}
-           },
-         ]}
-       }
-     ]} = new_tree
 
     16 = Util.count_entries(new_tree)
     true = Validation.tree_valid?(new_tree, cfg)
 
-    {:ok, new_tree} = R.delete(new_tree, cfg, {{{2, 2, 2}, {2, 2, 2}}, :b})
+    {:ok, new_tree} = RStar.delete(new_tree, cfg, {{{2, 2, 2}, {2, 2, 2}}, :b})
     15 = Util.count_entries(new_tree)
     true = Validation.tree_valid?(new_tree, cfg)
 
-    {:ok, new_tree} = R.delete(new_tree, cfg, {{{3, 9, 6}, {3, 9, 6}}, :i})
+    {:ok, new_tree} = RStar.delete(new_tree, cfg, {{{3, 9, 6}, {3, 9, 6}}, :i})
     14 = Util.count_entries(new_tree)
     true = Validation.tree_valid?(new_tree, cfg)
   end
 
-  test "[R] Delete: remove an element from a leaf, reducing the tree to root node only" do
-    {_, cfg} = R.make(4)
+  test "[R*] Delete: remove an element from a leaf, reducing the tree to root node only" do
+    {_, cfg} = RStar.make(4)
 
     delete_entry = {{{5, 39, 24}, {5, 39, 24}}, 14}
     t = {:internal,[
@@ -151,13 +75,13 @@ defmodule Tesseract.Tree.R.DeleteTest do
         [{{{56, 29, 92}, {56, 29, 92}}, 15}, {{{5, 39, 24}, {5, 39, 24}}, 14}]}}
     ]}
 
-    {:ok, nt} = R.delete(t, cfg, delete_entry)
+    {:ok, nt} = RStar.delete(t, cfg, delete_entry)
 
     true = Validation.tree_valid?(nt, cfg)
   end
 
-  test "[R] Delete: remove an entry from a root which is a leaf" do
-    {_, cfg} = R.make(4)
+  test "[R*] Delete: remove an entry from a root which is a leaf" do
+    {_, cfg} = RStar.make(4)
     
     delete_entry = {{{49, 66, 27}, {49, 66, 27}}, 11}
 
@@ -167,7 +91,7 @@ defmodule Tesseract.Tree.R.DeleteTest do
       {{{49, 66, 27}, {49, 66, 27}}, 11}
     ]}
 
-    {:ok, nt} = R.delete(t, cfg, delete_entry)
+    {:ok, nt} = RStar.delete(t, cfg, delete_entry)
 
     {:leaf,[
       {{{36, 10, 75}, {36, 10, 75}}, 2},
@@ -177,8 +101,8 @@ defmodule Tesseract.Tree.R.DeleteTest do
     true = Validation.tree_valid?(nt, cfg)
   end
 
-  test "[R] Delete: delete an entry whose deletion eliminates the whole subtree #0" do
-    {_, cfg} = R.make(4)
+  test "[R*] Delete: delete an entry whose deletion eliminates the whole subtree #0" do
+    {_, cfg} = RStar.make(4)
 
     tree = {:internal,
     [
@@ -219,13 +143,13 @@ defmodule Tesseract.Tree.R.DeleteTest do
 
     delete_entry = {{{78, 21, 34}, {78, 21, 34}}, 14}
 
-    {:ok, new_tree} = R.delete(tree, cfg, delete_entry)
+    {:ok, new_tree} = RStar.delete(tree, cfg, delete_entry)
 
     true = Validation.tree_valid?(new_tree, cfg)
   end
 
-  test "[R] Delete: delete an entry whose deletion eliminates the whole subtree" do
-    {_, cfg} = R.make(4)
+  test "[R*] Delete: delete an entry whose deletion eliminates the whole subtree" do
+    {_, cfg} = RStar.make(4)
 
     tree = {:internal,
     [
@@ -282,13 +206,13 @@ defmodule Tesseract.Tree.R.DeleteTest do
 
     delete_entry = {{{78, 21, 34}, {78, 21, 34}}, 14}
 
-    {:ok, new_tree} = R.delete(tree, cfg, delete_entry)
+    {:ok, new_tree} = RStar.delete(tree, cfg, delete_entry)
 
     true = Validation.tree_valid?(new_tree, cfg)
   end
 
-  test "[R] Delete: case #3" do
-    {_, cfg} = R.make(4)
+  test "[R*] Delete: case #3" do
+    {_, cfg} = RStar.make(4)
 
     tree = {:internal,
       [
@@ -317,14 +241,14 @@ defmodule Tesseract.Tree.R.DeleteTest do
       ]}
 
     delete_entry = {{{38, 22, 3}, {38, 22, 3}}, 4}
-    {:ok, new_tree} = R.delete(tree, cfg, delete_entry)
+    {:ok, new_tree} = RStar.delete(tree, cfg, delete_entry)
 
     true = Validation.tree_valid?(new_tree, cfg)
   end
 
   @tag :long_running
   @tag :long_running_delete
-  test "[R] Delete: 100 iterations of deleting up to 20 entries from tree with 20 entries" do
+  test "[R*] Delete: 100 iterations of deleting up to 20 entries from tree with 20 entries" do
     single_run = fn () ->
         n = 20
         entries =
@@ -336,8 +260,8 @@ defmodule Tesseract.Tree.R.DeleteTest do
         end)
         |> Util.points2entries
 
-        {tree, cfg} = R.make(4)
-        {:ok, tree} = R.insert(tree, cfg, entries)
+        {tree, cfg} = RStar.make(4)
+        {:ok, tree} = RStar.insert(tree, cfg, entries)
         true = Validation.tree_valid?(tree, cfg)
 
         entries
@@ -346,7 +270,7 @@ defmodule Tesseract.Tree.R.DeleteTest do
         |> Enum.reduce({tree, cfg}, fn {e, i}, {t, c} ->
           expected_count = n - i - 1
 
-          {:ok, nt} = R.delete(t, c, e)
+          {:ok, nt} = RStar.delete(t, c, e)
           ^expected_count = Util.count_entries(nt)
           true = Validation.tree_valid?(nt, cfg)
 

@@ -11,13 +11,12 @@ defmodule Tesseract.Tree.R.Util do
     points |> Enum.map(&(point2entry(&1, padding)))
   end
 
-  def entry_mbb({mbb, _}) do
-    mbb
-  end
+  def entry_mbb({mbb, _}), do: mbb
 
-  def entry_value({_, value}) do
-    value
-  end
+  def entry_value({_, value}), do: value
+
+  def entry_is_leaf?({_, {:leaf, _}}), do: true
+  def entry_is_leaf?(_), do: false
 
   # TODO: rename to entries_mbb/1
   def union_mbb(entries) when is_list(entries) do
@@ -27,7 +26,7 @@ defmodule Tesseract.Tree.R.Util do
   end
 
   # TODO: rename to wrap_mbb/1
-  def internal_entry({_, [_ | _] = entries} = node) do
+  def internal_entry({_, entries} = node) when is_list(entries) do
     {union_mbb(entries), node}
   end
 

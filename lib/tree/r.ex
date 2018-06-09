@@ -8,8 +8,7 @@ defmodule Tesseract.Tree.R do
       min_entries: trunc(max_entries / 2),
       max_entries: max_entries,
       type: :r,
-      choose_insert_entry_fn: {Tesseract.Tree.R.Insert, :choose_insert_entry},
-      split_fn: {Tesseract.Tree.R.Split, :split}
+      inserter: Tesseract.Tree.R.Insert
     }
 
     {{:leaf, []}, cfg}

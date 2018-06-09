@@ -1,6 +1,5 @@
 defmodule Tesseract.Tree.R.Delete do
   alias Tesseract.Tree.R.Util
-  alias Tesseract.Tree.R.Insert
   alias Tesseract.Geometry.Box
 
   def delete(root, cfg, entry) do
@@ -76,7 +75,7 @@ defmodule Tesseract.Tree.R.Delete do
     end)
   end
 
-  defp reinsert_eliminated_nodes(root_node, cfg, eliminated_nodes) do
+  defp reinsert_eliminated_nodes(root_node, %{inserter: inserter} = cfg, eliminated_nodes) do
     leaf_entries =
       eliminated_nodes
       |> Enum.filter(fn 
@@ -85,7 +84,7 @@ defmodule Tesseract.Tree.R.Delete do
       end)
       |> Enum.flat_map(fn {_, {:leaf, entries}} -> entries end)
 
-    {:ok, root_node} = Insert.insert(root_node, cfg, leaf_entries)
+    {:ok, root_node} = inserter.insert(root_node, cfg, leaf_entries)
 
     root_node =
       eliminated_nodes
@@ -97,7 +96,7 @@ defmodule Tesseract.Tree.R.Delete do
         entries |> Enum.map(fn e -> {depth, e} end)
       end)
       |> Enum.reduce(root_node, fn {depth, entry}, tree ->
-        {:ok, new_tree} = Insert.insert_entry_at(tree, cfg, entry, depth)
+        {:ok, new_tree} = inserter.insert_entry_at(tree, cfg, entry, depth)
         new_tree
       end)
 

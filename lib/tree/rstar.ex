@@ -8,7 +8,8 @@ defmodule Tesseract.Tree.RStar do
       min_entries: trunc(max_entries / 2),
       max_entries: max_entries,
       type: :rstar,
-      reinsert_p: 0.3
+      reinsert_p: 0.3,
+      inserter: Tesseract.Tree.RStar.Insert
     }
 
     {{:leaf, []}, cfg}
