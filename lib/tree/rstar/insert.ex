@@ -20,7 +20,7 @@ defmodule Tesseract.Tree.RStar.Insert do
   end
 
   defp normalize_insert({:split, {node1, node2}}) do
-    {:internal, [Util.internal_entry(node1), Util.internal_entry(node2)]}
+    {:internal, [Util.wrap_mbb(node1), Util.wrap_mbb(node2)]}
   end
 
   defp post_insert(entries, %{} = cfg, type, depth) do
@@ -92,16 +92,16 @@ defmodule Tesseract.Tree.RStar.Insert do
 
    case insert_entry_at(chosen_node, cfg, entry, depth + 1, entry_depth) do
       {:ok, child_node} ->
-        new_entries = List.replace_at(entries, index, Util.internal_entry(child_node))
+        new_entries = List.replace_at(entries, index, Util.wrap_mbb(child_node))
         {:ok, {:internal, new_entries}}
 
       {:reinsert, child_node, new_cfg, reinsert_entries} ->
-        new_entries = List.replace_at(entries, index, Util.internal_entry(child_node))
+        new_entries = List.replace_at(entries, index, Util.wrap_mbb(child_node))
         {:reinsert, {:internal, new_entries}, new_cfg, reinsert_entries}
 
       {:split, {child_node1, child_node2}} ->
         entries = List.delete_at(entries, index)
-        [Util.internal_entry(child_node1) | [Util.internal_entry(child_node2) | entries]]
+        [Util.wrap_mbb(child_node1) | [Util.wrap_mbb(child_node2) | entries]]
         |> post_insert(cfg, :internal, depth)
     end
   end

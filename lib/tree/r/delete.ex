@@ -50,7 +50,7 @@ defmodule Tesseract.Tree.R.Delete do
             {List.delete_at(entries, index), [{depth + 1, subnode} | eliminated_nodes]}
 
           true ->
-            {List.replace_at(entries, index, Util.internal_entry(subnode)), eliminated_nodes}
+            {List.replace_at(entries, index, Util.wrap_mbb(subnode)), eliminated_nodes}
         end
 
         {:deleted, {:internal, new_entries}, new_eliminated_nodes}

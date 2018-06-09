@@ -25,8 +25,7 @@ defmodule Tesseract.Tree.R.Util do
     |> Box.union()
   end
 
-  # TODO: rename to wrap_mbb/1
-  def internal_entry({_, entries} = node) when is_list(entries) do
+  def wrap_mbb({_, entries} = node) when is_list(entries) do
     {union_mbb(entries), node}
   end
 

@@ -19,7 +19,7 @@ defmodule Tesseract.Tree.R.Insert do
   end
 
   defp normalize_insert({:split, {node1, node2}}) do
-    {:internal, [Util.internal_entry(node1), Util.internal_entry(node2)]}
+    {:internal, [Util.wrap_mbb(node1), Util.wrap_mbb(node2)]}
   end
 
   defp post_insert(entries, cfg, type) do
@@ -51,11 +51,11 @@ defmodule Tesseract.Tree.R.Insert do
 
     case insert_entry(chosen_node, cfg, new_entry) do
       {:ok, {_, [_ | _]} = child_node} ->
-        List.replace_at(entries, index, Util.internal_entry(child_node))
+        List.replace_at(entries, index, Util.wrap_mbb(child_node))
 
       {:split, {child_node1, child_node2}} ->
         entries = List.delete_at(entries, index)
-        [Util.internal_entry(child_node1) | [Util.internal_entry(child_node2) | entries]]
+        [Util.wrap_mbb(child_node1) | [Util.wrap_mbb(child_node2) | entries]]
     end
   end
 
@@ -77,11 +77,11 @@ defmodule Tesseract.Tree.R.Insert do
     
     new_entries = case insert_entry_at(chosen_node, cfg, entry, entry_depth, depth + 1) do
       {:ok, child_node} ->
-        List.replace_at(entries, index, Util.internal_entry(child_node))
+        List.replace_at(entries, index, Util.wrap_mbb(child_node))
 
       {:split, {child_node1, child_node2}} ->
         entries = List.delete_at(entries, index)
-        [Util.internal_entry(child_node1) | [Util.internal_entry(child_node2) | entries]]
+        [Util.wrap_mbb(child_node1) | [Util.wrap_mbb(child_node2) | entries]]
     end
     
     new_entries
