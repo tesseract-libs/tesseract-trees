@@ -4,7 +4,7 @@ defmodule TesseractTrees.MixProject do
   def project do
     [
       app: :tesseract_trees,
-      version: "0.2.0",
+      version: "0.2.1",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -25,8 +25,9 @@ defmodule TesseractTrees.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:tesseract_geometry, "~> 0.2.0"},
-      {:tesseract_ext, "~> 0.1.0"},
+      {:tesseract_geometry, "~> 0.2.2"},
+      {:tesseract_ext, "~> 0.1.2"},
+      {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
 
