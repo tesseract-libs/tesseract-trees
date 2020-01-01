@@ -27,7 +27,7 @@ defmodule Tesseract.Tree.R.QueryTest do
   end
 
   @tag :long_running
-  test "[R] Query test: 1000 random queries on 1000 entries (on 100 different trees)." do
+  test "[R] Query test: 100x 1000 random queries on 1000 entries (each run on different tree)." do
     single_run = fn () ->
         entries =
         1..1000
@@ -68,7 +68,7 @@ defmodule Tesseract.Tree.R.QueryTest do
   end
 
   @tag :long_running
-  test "[R] Query test: 1000 random queries on 1000 entries (on 1 tree)." do
+  test "[R] Query test: 100x 1000 random queries on 1000 entries (all on the same tree)." do
     entries =
       1..1000
       |> Enum.map(fn n ->
@@ -109,7 +109,7 @@ defmodule Tesseract.Tree.R.QueryTest do
   end
 
   @tag :long_running
-  test "[R*] Query test: 1000 random queries on 1000 entries (on 1 tree)." do
+  test "[R*] Query test: 100x 1000 random queries on 1000 entries (all on the same tree)." do
     entries =
       1..1000
       |> Enum.map(fn n ->

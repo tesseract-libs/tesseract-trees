@@ -26,9 +26,13 @@ defmodule Tesseract.Tree.TB.Node do
     {:tb_node, left, right, triangle, [new_record | records]}
   end
 
-  def is_internal?({:tb_node, left, right, _, _}) when left != nil and right != nil, do: true
-  def is_internal?(_), do: false
+  def delete_records({:tb_node, left, right, triangle, _}) do
+    {:tb_node, left, right, triangle, []}
+  end
 
-  def is_leaf?(node), do: !is_internal?(node)
+  def is_leaf?({:tb_node, nil, nil, _, _}), do: true
+  def is_leaf?(_), do: false
+
+  def is_internal?(node), do: !is_leaf?(node)
 
 end
