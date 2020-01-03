@@ -15,7 +15,6 @@ defmodule Tesseract.Tree.TB do
 
   def query({:tb_tree, root, cfg} = tree, query_rect) do
     root_triangle = Node.triangle(root)
-    root_triangle_vertices = Triangle.compute_vertices(root_triangle)
 
     if Util.node_intersects_query?(root, query_rect) do
       query_node(root, query_rect)

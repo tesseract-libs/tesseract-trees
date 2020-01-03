@@ -2,9 +2,7 @@ defmodule Tesseract.Tree.TB.Util do
   alias Tesseract.Tree.TB.{Node, Triangle}
 
   def node_intersects_query?(node, query_rect) do
-    triangle = Node.triangle(node)
-    triangle_vertices = Triangle.compute_vertices(triangle)
-    rectangle_intersects_triangle?(query_rect, triangle_vertices)
+    rectangle_intersects_triangle?(query_rect, node |> Node.triangle |> Triangle.vertices)
   end
 
   # TODO: this is expensive $$$$ :S
