@@ -25,14 +25,14 @@ defmodule Tesseract.Tree.TB do
     end
   end
 
-  def query_node({:tb_node, nil, nil, triangle, records}, query_rect) do
+  def query_node({:tb_node, nil, nil, _triangle, records}, query_rect) do
     records
     |> Enum.filter(fn record -> 
       Util.rectangle_contains_point?(query_rect, Record.interval(record)) 
     end)
   end
 
-  def query_node({:tb_node, left, right, _, records}, query_rect) do
+  def query_node({:tb_node, left, right, _, _records}, query_rect) do
     results_left = if Util.node_intersects_query?(left, query_rect) do
       query_node(left, query_rect)
     else

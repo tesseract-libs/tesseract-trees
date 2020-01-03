@@ -1,48 +1,47 @@
 defmodule Tesseract.Tree.TB.QueryTest do
+  alias Tesseract.Tree
   alias Tesseract.Tree.TB
-  alias Tesseract.Tree.TB.{Record, Interval, Util}
+  alias Tesseract.Tree.TB.{Interval, Util}
+  alias Tesseract.Tree.Util.Insert
 
   use ExUnit.Case, async: true
 
   test "[TB] Query test #0", _ do
-    tree = TB.make()
-    record1 = Record.make(:test, Interval.make(2, 4))
-    record2 = Record.make(:test2, Interval.make(3, 6))
-    record3 = Record.make(:test3, Interval.make(10, 10))
-    record4 = Record.make(:test4, Interval.make(3, 9))
-    record5 = Record.make(:test5, Interval.make(1, 6))
-    record6 = Record.make(:test6, Interval.make(2.5, 5.5))
+    points = [
+      test: Interval.make(2, 4),
+      test2: Interval.make(3, 6),
+      test3: Interval.make(10, 10),
+      test4: Interval.make(3, 9),
+      test5: Interval.make(1, 6),
+      test6: Interval.make(2.5, 5.5)
+    ]
 
-    {:ok, new_tree} = TB.insert(tree, record1)
-    {:ok, new_tree} = TB.insert(new_tree, record2)
-    {:ok, new_tree} = TB.insert(new_tree, record3)
-    {:ok, new_tree} = TB.insert(new_tree, record4)
-    {:ok, new_tree} = TB.insert(new_tree, record5)
-    {:ok, new_tree} = TB.insert(new_tree, record6)
+    records = Insert.make_records(:tb, points, true)
+    tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
 
     results = 
-      new_tree
-      |> TB.query({{0.2, 5}, {6, 7.5}})
+      tree
+      |> Tree.query({{0.2, 5}, {6, 7.5}})
       |> MapSet.new
 
-    assert results === MapSet.new([record2, record5, record6])
+    assert results === ( 
+      records 
+      |> Keyword.take([:test2, :test5, :test6]) 
+      |> Keyword.values
+      |> MapSet.new
+    )
   end
 
   @tag :long_running
   test "[TB] Query test: 100x 1000 random queries on 1000 entries (on 1 tree)." do
-    records =
+    points =
       1..1000
       |> Enum.map(fn n ->
-        Record.make("point #{n}", Interval.make(:rand.uniform(16), :rand.uniform(16)))
+        {"point #{n}", Interval.make(:rand.uniform(16), :rand.uniform(16))}
       end)
 
-    tree =
-      records
-      |> Enum.reduce(TB.make(), 
-        fn record, tree -> 
-          {:ok, new_tree} = TB.insert(tree, record) 
-          new_tree
-        end)
+    records = Insert.make_records(:tb, points)
+    tree = Insert.make_tree_from_records(:tb, records)
 
     single_run = fn () ->
         # Random search
@@ -56,12 +55,12 @@ defmodule Tesseract.Tree.TB.QueryTest do
             {{min_x, min_y}, {max_x, max_y}}
         end)
         |> Enum.each(fn search_box -> 
-            results = TB.query(tree, search_box)
+            results = Tree.query(tree, search_box)
             
             assert (
               true === 
                 results
-                |> Enum.all?(fn record ->  Util.rectangle_contains_point?(search_box, Record.interval(record)) end)
+                |> Enum.all?(fn record ->  Util.rectangle_contains_point?(search_box, TB.Record.interval(record)) end)
             )
         end)
       end
