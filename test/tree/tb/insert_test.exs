@@ -1,7 +1,7 @@
 defmodule Tesseract.Tree.TB.InsertTest do
   alias Tesseract.Tree.Util.Insert
   alias Tesseract.Tree.TB
-  alias Tesseract.Tree.TB.{Node, Interval}
+  alias Tesseract.Tree.TB.{Node, Interval, Util}
 
   use ExUnit.Case, async: true
 
@@ -62,7 +62,7 @@ defmodule Tesseract.Tree.TB.InsertTest do
     points =
       1..100
       |> Enum.map(fn n ->
-        value = Interval.make(:rand.uniform(16), :rand.uniform(16))
+        value = Interval.make(:rand.uniform(Util.lambda()), :rand.uniform(Util.lambda()))
         {"point #{n}", value}
       end)
     

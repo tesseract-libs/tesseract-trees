@@ -27,4 +27,13 @@ defmodule Tesseract.Tree.Util.Insert do
       end)
   end
 
+  def results_contain_all_records?(results, records, only_labels \\ []) do
+    expected = if only_labels do
+      records |> Keyword.take(only_labels) |> Keyword.values
+    else
+      records
+    end
+
+    MapSet.new(results) === MapSet.new(expected)
+  end
 end

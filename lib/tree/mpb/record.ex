@@ -1,13 +1,21 @@
 defmodule Tesseract.Tree.MPB.Record do
-  alias Tesseract.Tree.TB.Interval
+  alias Tesseract.Tree.TB
+  alias Tesseract.TreeFactory
 
-  def make(label, {t_start, vec3_start}, {t_end, vec3_end}) do
-    x = Interval.make(vec3_start |> elem(1), vec3_end |> elem(1))
-    y = Interval.make(vec3_start |> elem(2), vec3_end |> elem(2))
-    z = Interval.make(vec3_start |> elem(3), vec3_end |> elem(3))
-    t = Interval.make(t_start, t_end)
+  def make(label, vec4_start, vec4_end) do
+    x = TB.Interval.make(vec4_start |> elem(0), vec4_end |> elem(0))
+    y = TB.Interval.make(vec4_start |> elem(1), vec4_end |> elem(1))
+    z = TB.Interval.make(vec4_start |> elem(2), vec4_end |> elem(2))
+    t = TB.Interval.make(vec4_start |> elem(3), vec4_end |> elem(3))
     
-    {:mpb_record, label, {x, y, z, t}}  
+    {:mpb_record, label, {x, y, z, t}} 
+  end
+
+  def make_from_tb_records(x, y, z, t) do
+    label = TB.Record.label(x)
+    values = {TB.Record.interval(x), TB.Record.interval(y), TB.Record.interval(z), TB.Record.interval(t)}
+
+    {:mpb_record, label, values}
   end
 
   def label({:mpb_record, label, _}), do: label
@@ -19,4 +27,13 @@ defmodule Tesseract.Tree.MPB.Record do
   def z({:mpb_record, _, {_x, _y, z, _t}}), do: z
 
   def t({:mpb_record, _, {_x, _y, _z, t}}), do: t
+
+  def to_tb_record({:mpb_record, label, {x, y, z, t}}, component) when is_atom(component) do
+    case component do
+      :x -> TreeFactory.make_record(:tb, label, x)
+      :y -> TreeFactory.make_record(:tb, label, y)
+      :z -> TreeFactory.make_record(:tb, label, z)
+      :t -> TreeFactory.make_record(:tb, label, t)
+    end
+  end
 end

@@ -1,8 +1,7 @@
 defmodule Tesseract.Tree.TB.Triangle do
+  alias Tesseract.Tree.TB.Util
 
   # WARNING: LEVEL OF THE FIRST DECOMPOSITION IS 2, NOT 1 AS PER PAPER!
-
-  @lambda 16
 
   @north 0
   @north_east 1
@@ -111,7 +110,7 @@ defmodule Tesseract.Tree.TB.Triangle do
   end
 
   defp apex_vector_length(level) when level > 0 do
-    @lambda * :math.pow((:math.sqrt(2) / 2), level - 1)
+    Util.lambda() * :math.pow((:math.sqrt(2) / 2), level - 1)
   end
   
   # Algorithm 1: Children apex directions of "A Triangular Decomposition Access Method for Temporal Data - TD-tree"

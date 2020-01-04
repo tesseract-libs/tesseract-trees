@@ -4,16 +4,16 @@
 # - Allen described 13 distinct interval algebra (IA) relationships that may hold between pairs of intervals (Allen 1983)
 
 defmodule Tesseract.Tree.TB do
-  alias Tesseract.Tree.TB.{Node, Triangle, Record, Util}
+  alias Tesseract.Tree.TB.{Node, Triangle, Record, Util, Query}
 
   # TODO: typespec!!
   def make(cfg \\ [max_records_per_node: 32]) do
-    {:tb_tree, Node.make(Triangle.make({0, 16}, :north_west, 1)), cfg}
+    {:tb_tree, Node.make(Triangle.make({0, Util.lambda()}, :north_west, 1)), cfg}
   end
 
   def root({:tb_tree, root, _}), do: root
 
-  def query({:tb_tree, root, cfg} = tree, query_rect) do
+  def query({:tb_tree, root, cfg} = tree, %Query{query_box: query_rect} = query) do
     root_triangle = Node.triangle(root)
 
     if Util.node_intersects_query?(root, query_rect) do
@@ -27,7 +27,12 @@ defmodule Tesseract.Tree.TB do
   def query_node({:tb_node, nil, nil, _triangle, records}, query_rect) do
     records
     |> Enum.filter(fn record -> 
-      Util.rectangle_contains_point?(query_rect, Record.interval(record)) 
+      Util.rectangle_contains_point?(query_rect, Record.interval(record))
+      # {{min_x, min_y}, {max_x, max_y}} = query_rect
+      # {px, py} = Record.interval(record)
+      # label = Record.label(record)
+      # IO.puts "RCP?: [#{label}] {{#{min_x}, #{min_y}}, {#{max_x}, #{max_y}}}, {#{px}, #{py}}: #{r}"
+      # r
     end)
   end
 

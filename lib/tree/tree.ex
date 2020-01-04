@@ -8,8 +8,10 @@ end
 
 defprotocol Tesseract.TreeFactory do
 
+  # TODO: move to Tesseract.Tree, implement Atom for this one
   def make(type, cfg)
 
+  # TODO: use Tree.Record.make instead!
   def make_record(type, label, value)
 
 end
@@ -18,11 +20,15 @@ defimpl Tesseract.TreeFactory, for: Atom do
   alias Tesseract.Tree.TB
   alias Tesseract.Tree.MPB
 
+  def make(type, cfg \\ [])
   def make(:tb, cfg), do: TB.make(cfg)
   def make(:mpb, cfg), do: MPB.make(cfg)
 
   def make_record(:tb, label, value), do: TB.Record.make(label, value)
-  def make_record(:mpb, label, {value_start, value_end}), do: MPB.Record.make(label, value_start, value_end)
+  
+  def make_record(:mpb, label, {value_start, value_end}) do
+    MPB.Record.make(label, value_start, value_end)
+  end
 
 end
 
