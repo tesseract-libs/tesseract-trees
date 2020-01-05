@@ -78,13 +78,24 @@ defmodule Tesseract.Tree.MPB do
       end)
   end
 
-  def query_component(component_tree, query_region, component) do
-    # IO.puts "querying component #{component} with region "
-    # IO.inspect query_region
-    # IO.puts "query interval created for component #{component}: "
+  def query_component({component, component_tree}, queries, collect_type) do
+    results = 
+      queries
+      |> Enum.flat_map(queries, &Tree.query(component_tree, &1))
+      |> Enum.
+      |> Enum.map(fn result -> {component, result} end)
+  end
 
+  defp matching_all_dimensions() do
+
+  end
+
+  defp matching_al_least_one_dimension() do
+
+  end
+
+  def query_component(component_tree, query_region, component) do
     interval = component_query_rect(query_region, component)
-    # IO.inspect interval
 
     component_tree    
     |> Tree.query(interval)
