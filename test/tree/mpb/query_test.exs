@@ -54,6 +54,15 @@ defmodule Tesseract.Tree.MPB.QueryTest do
     assert MapSet.new(results) === MapSet.new([:test])
   end
 
+  @tag :exec
+  test "[MPB] Query type: intersects", _ do
+    results = query(:intersects, {{0, 10}, {0, 10}, {0, 10}, {0, 3}})
+    assert MapSet.new(results) === MapSet.new([:test, :test2, :test3, :test4, :test5])
+
+    results = query(:intersects, {{2, 2}, {1, 1}, {1, 1}, {2, 2}})
+    assert MapSet.new(results) === MapSet.new([:test])
+  end
+
   # test "[MPB] Query type: covers", _ do
   #   results = query(:covers, {{1, 2}, {1, 1}, {1, 1}, {1, 3}})
   #   assert MapSet.new(results) === MapSet.new([:test])

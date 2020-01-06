@@ -8,7 +8,7 @@ defmodule Tesseract.Tree.TB.Interval do
 
   # Does interval A intersect interval B?
   def intersects?({a_min, a_max}, {b_min, b_max}) do
-    b_min < a_max && b_max > a_min
+    b_min <= a_max && b_max >= a_min
   end
 
   def is_point?({a, a}), do: true

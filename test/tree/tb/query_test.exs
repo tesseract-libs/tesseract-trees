@@ -5,7 +5,7 @@ defmodule Tesseract.Tree.TB.QueryTest do
 
   use ExUnit.Case, async: true
 
-  defp test_query_type(query_type, query_interval, expected_record_labels) do
+  defp test_query_type(query_type, query_interval) do
     intervals = [
       test: {2, 3},
       test2: {2, 6},
@@ -15,12 +15,23 @@ defmodule Tesseract.Tree.TB.QueryTest do
       test6: {0, 1}
     ]
 
+    test_query_type(query_type, query_interval, intervals)
+  end
+  
+  defp test_query_type(query_type, query_interval, intervals) do
     records = Insert.make_records(:tb, intervals, true)
     tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
     query = apply(Query, query_type, [Query.select(:labels), query_interval])
     results = Tree.query(tree, query)
 
-    assert Insert.results_contain_all_records?(results, records, expected_record_labels)
+    expected_result_labels =
+      intervals
+      |> Enum.filter(fn {label, interval} -> 
+          Query.predicate(query_type, query_interval, interval)
+        end)
+      |> Keyword.keys()
+
+    assert Insert.results_contain_all_records?(results, records, expected_result_labels)
   end
 
   test "[TB] Query #0", _ do
@@ -41,11 +52,11 @@ defmodule Tesseract.Tree.TB.QueryTest do
     assert true === Insert.results_contain_all_records?(results, records, [:test, :test2, :test5, :test6])
   end
 
-  test "[TB] Query: type = equals.", _ do
-    test_query_type(:equals, {2, 3}, [:test])
+  test "[TB] Query: type: equals.", _ do
+    test_query_type(:equals, {2, 3})
   end
 
-  test "[TB] Query: type = equals, querying lower boundry.", _ do
+  test "[TB] Query: type: equals, querying lower boundry.", _ do
     intervals = [test: {0, 0}]
     records = Insert.make_records(:tb, intervals, true)
     tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
@@ -55,7 +66,7 @@ defmodule Tesseract.Tree.TB.QueryTest do
     assert true === Insert.results_contain_all_records?(results, records, [:test])
   end
 
-  test "[TB] Query: type = equals, querying upper boundry.", _ do
+  test "[TB] Query: type: equals, querying upper boundry.", _ do
     intervals = [test: {Util.lambda(), Util.lambda()}]
     records = Insert.make_records(:tb, intervals, true)
     tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
@@ -66,56 +77,71 @@ defmodule Tesseract.Tree.TB.QueryTest do
   end
 
   test "[TB] Query test: starts.", _ do
-    test_query_type(:starts, {2, 4}, [:test])
+    test_query_type(:starts, {2, 4})
   end
 
   test "[TB] Query test: started_by.", _ do
-    test_query_type(:started_by, {2, 4}, [:test2])
+    test_query_type(:started_by, {2, 4})
   end
 
   test "[TB] Query test: meets.", _ do
-    test_query_type(:meets, {6, 7}, [:test2, :test4])
+    test_query_type(:meets, {6, 7})
   end
 
   test "[TB] Query test: met_by.", _ do
-    test_query_type(:met_by, {6, 7}, [:test5])
+    test_query_type(:met_by, {6, 7})
   end
 
   test "[TB] Query test: finishes.", _ do
-    test_query_type(:finishes, {2, 6}, [:test2, :test4])
+    test_query_type(:finishes, {2, 6})
   end
 
   test "[TB] Query test: finished_by.", _ do
-    test_query_type(:finished_by, {5, 6}, [:test2, :test4])
+    test_query_type(:finished_by, {5, 6})
   end
 
   test "[TB] Query test: before.", _ do
-    test_query_type(:before, {4, 6}, [:test, :test6])
-    test_query_type(:before, {3, 5}, [:test6])
+    test_query_type(:before, {4, 6})
+    test_query_type(:before, {3, 5})
   end
 
   test "[TB] Query test: aftr.", _ do
-    test_query_type(:aftr, {0, 2.5}, [:test4, :test5])
+    test_query_type(:aftr, {0, 2.5})
   end
 
   test "[TB] Query test: overlaps.", _ do
-    test_query_type(:overlaps, {3.5, 7}, [:test2, :test3, :test4])
+    test_query_type(:overlaps, {3.5, 7})
   end
 
   test "[TB] Query test: overlapped_by.", _ do
-    test_query_type(:overlapped_by, {1, 2.5}, [:test, :test2, :test3])
+    test_query_type(:overlapped_by, {1, 2.5})
   end
 
   test "[TB] Query test: during.", _ do
-    test_query_type(:during, {1, 7}, [:test, :test2, :test3, :test4])
+    test_query_type(:during, {1, 7})
   end
 
   test "[TB] Query test: contains.", _ do
-    test_query_type(:contains, {3, 4}, [:test2, :test3, :test4])
+    test_query_type(:contains, {3, 4})
   end
 
+  @tag :exec
   test "[TB] Query test: intersects.", _ do
-    test_query_type(:intersects, {3.4, 4.5}, [:test2, :test3, :test4])
+    test_query_type(:intersects, {3.4, 4.5})
+
+    intervals = [
+      a: Interval.make(1, 2),
+      b: Interval.make(2, 2),
+      c: Interval.make(3, 2),
+      d: Interval.make(2, 1),
+      e: Interval.make(1, 1)
+    ]
+
+    test_query_type(:intersects, {0, 10}, intervals)
+    test_query_type(:intersects, {0, 5}, intervals)
+    test_query_type(:intersects, {0, 3}, intervals)
+    test_query_type(:intersects, {0, 2}, intervals)
+    test_query_type(:intersects, {1, 2}, intervals)
   end
 
 

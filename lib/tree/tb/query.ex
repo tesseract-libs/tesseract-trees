@@ -135,8 +135,70 @@ defmodule Tesseract.Tree.TB.Query do
   def intersects(%__MODULE__{} = query, {value_start, value_end} = query_interval) do
     query
     |> set_query_type(:intersects)
-    |> set_query_box({{0, value_end}, {value_start, Util.lambda()}})
+    |> set_query_box({{0, value_start}, {value_end, Util.lambda()}})
     |> set_input_interval(query_interval)
+  end
+
+  # TODO: maybe this stuff should actually live in the Interval module.
+   
+  def predicate(:equals, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    i_s === q_s && i_e === q_e
+  end
+
+  def predicate(:starts, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    i_s === q_s && q_s <= i_e && i_e <= q_e
+  end
+
+  def predicate(:started_by, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    i_s === q_s && i_e >= q_e
+  end
+
+  def predicate(:meets, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    # TODO: should actually be: i_s < i_e && i_e === q_s && q_s < q_e
+    i_e === q_s
+  end
+
+  def predicate(:met_by, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    # TODO: should actually be: q_s < q_e && q_e === i_s && i_s < i_e
+    q_e === i_s
+  end
+
+  def predicate(:finishes, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    q_s <= i_s && i_s <= q_e && i_e === q_e
+  end
+
+  def predicate(:finished_by, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    i_s <= q_s && i_e === q_e
+  end
+
+  def predicate(:before, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    # TODO: should actually be: i_s <= i_e && i_e <= q_s && q_s <= q_e
+    i_e <= q_s
+  end
+
+  def predicate(:aftr, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    # TODO: should actually be: q_s <= q_e && q_e <= i_s && i_s <= i_e
+    q_e <= i_s
+  end
+
+  def predicate(:overlaps, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    i_s <= q_s && q_s <= i_e && i_e <= q_e
+  end
+
+  def predicate(:overlapped_by, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    q_s <= i_s && i_s <= q_e && i_e >= q_e
+  end
+
+  def predicate(:during, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    q_s <= i_s && i_s <= i_e && i_e <= q_e
+  end
+
+  def predicate(:contains, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    i_s <= q_s && q_s <= q_e && q_e <= i_e
+  end
+
+  def predicate(:intersects, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+    i_s <= q_e && q_s <= i_e
   end
 
 end

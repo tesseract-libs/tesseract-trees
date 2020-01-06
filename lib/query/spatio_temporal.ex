@@ -23,11 +23,11 @@ defmodule Tesseract.Query.SpatioTemporal do
     %{query | t: time_interval}
   end
 
-  def in_space(%__MODULE__{} = query, {x_interval, y_interval, z_interval}) do
+  def in_space(%__MODULE__{} = query, {{x_min, y_min, z_min}, {x_max, y_max, z_max}}) do
     query
-    |> Map.put(:x, x_interval)
-    |> Map.put(:y, y_interval)
-    |> Map.put(:z, z_interval)
+    |> Map.put(:x, Interval.make(x_min, x_max))
+    |> Map.put(:y, Interval.make(y_min, y_max))
+    |> Map.put(:z, Interval.make(z_min, z_max))
   end
 
   def at_point(%__MODULE__{} = query, {x, y, z}) do
