@@ -1,10 +1,10 @@
 defmodule Tesseract.Tree.TB.Query do
   alias Tesseract.Tree.TB.{Util, Interval}
 
-  defstruct [selection: nil, query_type: nil, query_box: nil, input_interval: nil]
+  defstruct [ref: nil, selection: nil,query_type: nil, query_box: nil, input_interval: nil]
 
   def select(selection) do
-    %__MODULE__{selection: selection}
+    %__MODULE__{selection: selection, ref: make_ref()}
   end
 
   def select(%__MODULE__{} = query, selection) do

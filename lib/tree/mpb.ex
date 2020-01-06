@@ -1,9 +1,7 @@
 defmodule Tesseract.Tree.MPB do
   alias Tesseract.Tree
   alias Tesseract.TreeFactory
-  alias Tesseract.Tree.MPB.Record
-
-  require Logger
+  alias Tesseract.Tree.MPB.{Record, Query, QueryResult}
 
   def make(cfg \\ []) do
     x_tree = TreeFactory.make(:tb, [])
@@ -38,84 +36,88 @@ defmodule Tesseract.Tree.MPB do
     {component, new_component_tree}
   end
 
-  def query({:mpb_tree, cfg}, {_vec4_min, _vec4_max} = query_region) do
+  def query({:mpb_tree, cfg}, %Query{} = query) do
+    op = query_type_component_operator(query)
+    
     [:x, :y, :z, :t]
-    # Make task for each component record
     |> Enum.map(fn component ->
-        Task.async(__MODULE__, :query_component, [cfg[component], query_region, component])
+        {{component, cfg[component]}, query.component_queries[component]}
+      end)
+    |> Enum.map(fn {tagged_component_tree, queries} ->
+        # TODO: would be nice if we did not send the whole tree right here ;)
+        Task.async(__MODULE__, :query_component, [tagged_component_tree, queries])
       end)
     |> collect_parallel_tasks
     |> List.flatten
-    # |> IO.inspect
-    |> collect_query_results()
+    |> match(query_type_required_matches(op)) # required matches depend on query type (1 or 4).
   end
 
-  def collect_query_results(results) do
+  def query_component({component, component_tree} = c, queries) do
+    queries
+    |> Enum.flat_map(&query_component_single(c, &1))
+    |> match(1) # matches in at least one query.
+    |> Enum.map(fn result -> {component, result} end)
+  end
+
+  def query_component_single({component, component_tree}, query) do
+    component_tree
+    |> Tree.query(query)
+    |> Enum.map(&Tree.Record.label(&1))
+    |> Enum.map(fn result -> {query.ref, result} end)
+  end
+
+  ######################################################
+  ## This marks the start of "absolute shitcode" block.
+  ######################################################
+  def match(results, nil) do
     results
-    |> Enum.reduce({%{}, []},
-      fn {component, record}, {component_hit_set, results} ->
-        label = Tree.Record.label(record)
-        # IO.puts "#{label} matches in component #{component}"
-        component_hits = [{component, record} | Map.get(component_hit_set, label, [])] 
-        component_hit_set = Map.put(component_hit_set, label, component_hits)
-
-        results = if length(component_hits) === 4 do
-          [component_hits | results]
-        else
-          results
-        end
-
-        {component_hit_set, results}
-      end)
-    |> elem(1)
-    |> Enum.map(fn component_hits ->
-        Record.make_from_tb_records(
-          component_hits[:x], 
-          component_hits[:y], 
-          component_hits[:z],
-          component_hits[:t]
-        )
-      end)
+    # Convert to query result set.
+    |> Enum.reduce(%{}, &to_query_result_set/2)
+    # Convert to list of query results.
+    |> Map.values()
+    # Extract just the result from the query result, producing list of results.
+    |> Enum.map(&QueryResult.result/1)
   end
 
-  def query_component({component, component_tree}, queries, collect_type) do
-    results = 
-      queries
-      |> Enum.flat_map(queries, &Tree.query(component_tree, &1))
-      |> Enum.
-      |> Enum.map(fn result -> {component, result} end)
+  def match(results, required_matches) do
+    results
+    # Convert to query result set.
+    |> Enum.reduce(%{}, &to_query_result_set/2)
+    # Convert to list of query results.
+    |> Map.values()
+    # **badum-tsss** Finally filtering out the ones which don't satisfy the conditions
+    |> Enum.filter(&QueryResult.matches?(&1, required_matches))
+    # Extract just the result from the query result, producing list of results.
+    |> Enum.map(&QueryResult.result/1)
   end
 
-  defp matching_all_dimensions() do
-
+  defp to_query_result_set({tag, result}, result_set) do
+    qr = Map.get(result_set, result, QueryResult.make(result, []))
+    qr = QueryResult.mark(qr, tag)
+    Map.put(result_set, result, qr)
   end
 
-  defp matching_al_least_one_dimension() do
-
-  end
-
-  def query_component(component_tree, query_region, component) do
-    interval = component_query_rect(query_region, component)
-
-    component_tree    
-    |> Tree.query(interval)
-    |> Enum.map(fn r -> {component, r} end)
-  end
-
-  defp component_query_rect(query_region, component) do
-    {c_min, c_max} = minmax(query_region, component)
-    {{c_min, c_min}, {c_max, c_max}}
-  end
-
-  defp minmax({vec4_min, vec4_max} = _query_region, component) do
-    case component do
-      :x -> {vec4_min |> elem(0), vec4_max |> elem(0)}
-      :y -> {vec4_min |> elem(1), vec4_max |> elem(1)}
-      :z -> {vec4_min |> elem(2), vec4_max |> elem(2)}
-      :t -> {vec4_min |> elem(3), vec4_max |> elem(3)}
-      _ -> raise "Undefined component"
+  defp query_type_component_operator(%Query{} = query) do
+    case query.query_type do
+      :disjoint -> :or
+      :meets -> :or
+      :overlaps -> :and
+      :equals -> :and
+      :contains -> :and
+      :contained_by -> :and
+      :covers -> :and
+      :covered_by -> :and
+      :intersects -> :and
+      _ -> raise "Unknown query_type"
     end
   end
+
+  defp query_type_required_matches(:or), do: 1
+  defp query_type_required_matches(:and), do: 4
+  defp query_type_required_matches(nil), do: nil
+  ####################################################
+  ## This marks the end of "absolute shitcode" block.
+  ####################################################
 
   defp collect_parallel_tasks(tasks) do
     tasks
@@ -131,7 +133,6 @@ defmodule Tesseract.Tree.MPB do
         true
 
       _ = v -> 
-        Logger.error("non-ok value ", [v: v])
         false
     end)
     # Remove :ok tags from results

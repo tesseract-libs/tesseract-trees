@@ -3,6 +3,12 @@ defmodule Tesseract.Tree.TB.UtilTest do
 
   use ExUnit.Case, async: true
 
+  test "[TB-Util] rectangle_contains_point? for vertical line", _ do
+    rect = {{1.5, 1.5}, {1.5, 2.5}}
+    
+    assert true === Util.rectangle_contains_point?(rect, {1.5, 2})
+  end
+
   @tag :kkk
   test "[TB-Util] Sutherland-Hudgman: triangle clipped by rectangle, no overlap.", _ do
     triangle = [{2, 1}, {5, 1}, {3, 4}]

@@ -36,4 +36,5 @@ defmodule Tesseract.Tree.Util.Insert do
 
     MapSet.new(results) === MapSet.new(expected)
   end
+
 end

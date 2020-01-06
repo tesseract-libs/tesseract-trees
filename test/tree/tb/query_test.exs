@@ -91,6 +91,7 @@ defmodule Tesseract.Tree.TB.QueryTest do
 
   test "[TB] Query test: before.", _ do
     test_query_type(:before, {4, 6}, [:test, :test6])
+    test_query_type(:before, {3, 5}, [:test6])
   end
 
   test "[TB] Query test: aftr.", _ do
