@@ -1,7 +1,7 @@
 defmodule Tesseract.Tree.TB.Query do
-  alias Tesseract.Tree.TB.{Util, Interval}
+  alias Tesseract.Tree.TB.Util
 
-  defstruct [ref: nil, selection: nil,query_type: nil, query_box: nil, input_interval: nil]
+  defstruct [ref: nil, selection: nil, query_type: nil, query_box: nil, input_interval: nil]
 
   def select(selection) do
     %__MODULE__{selection: selection, ref: make_ref()}
@@ -31,6 +31,8 @@ defmodule Tesseract.Tree.TB.Query do
     |> set_input_interval(query_interval)
   end
 
+  # Allen described 13 distinct interval algebra (IA) relationships that may hold between pairs of intervals (Allen 1983)
+
   # Intervals which are: 
   # - started exactly at the start of the query interval and
   # - ended inside the query interval.
@@ -52,7 +54,7 @@ defmodule Tesseract.Tree.TB.Query do
   end
 
   # Intervals which are ended exactly where query interval starts.
-  def meets(%__MODULE__{} = query, {value_start, value_end} = query_interval) do    
+  def meets(%__MODULE__{} = query, {value_start, _value_end} = query_interval) do    
     query
     |> set_query_type(:meets)
     |> set_query_box({{0, value_start}, {value_start, value_start}})
@@ -60,7 +62,7 @@ defmodule Tesseract.Tree.TB.Query do
   end
 
   # Intervals which are started exactly where query interval ends. 
-  def met_by(%__MODULE__{} = query, {value_start, value_end} = query_interval) do
+  def met_by(%__MODULE__{} = query, {_value_start, value_end} = query_interval) do
     query
     |> set_query_type(:met_by)
     |> set_query_box({{value_end, value_end}, {value_end, Util.lambda()}})
@@ -84,7 +86,7 @@ defmodule Tesseract.Tree.TB.Query do
   end
 
   # Intervals which are started and ended before the query interval.
-  def before(%__MODULE__{} = query, {value_start, value_end} = query_interval) do
+  def before(%__MODULE__{} = query, {value_start, _value_end} = query_interval) do
     query
     |> set_query_type(:before)
     |> set_query_box({{0, 0}, {value_start, value_start}})
@@ -92,7 +94,7 @@ defmodule Tesseract.Tree.TB.Query do
   end
 
   # Intervals which are started after the end of query interval.
-  def aftr(%__MODULE__{} = query, {value_start, value_end} = query_interval) do
+  def aftr(%__MODULE__{} = query, {_value_start, value_end} = query_interval) do
     query
     |> set_query_type(:aftr)
     |> set_query_box({{value_end, value_end}, {Util.lambda(), Util.lambda()}})
@@ -153,12 +155,12 @@ defmodule Tesseract.Tree.TB.Query do
     i_s === q_s && i_e >= q_e
   end
 
-  def predicate(:meets, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+  def predicate(:meets, {q_s, _q_e} = _query_interval, {_i_s, i_e} = _result_interval) do
     # TODO: should actually be: i_s < i_e && i_e === q_s && q_s < q_e
     i_e === q_s
   end
 
-  def predicate(:met_by, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+  def predicate(:met_by, {_q_s, q_e} = _query_interval, {i_s, _i_e} = _result_interval) do
     # TODO: should actually be: q_s < q_e && q_e === i_s && i_s < i_e
     q_e === i_s
   end
@@ -171,12 +173,12 @@ defmodule Tesseract.Tree.TB.Query do
     i_s <= q_s && i_e === q_e
   end
 
-  def predicate(:before, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+  def predicate(:before, {q_s, _q_e} = _query_interval, {_i_s, i_e} = _result_interval) do
     # TODO: should actually be: i_s <= i_e && i_e <= q_s && q_s <= q_e
     i_e <= q_s
   end
 
-  def predicate(:aftr, {q_s, q_e} = _query_interval, {i_s, i_e} = _result_interval) do
+  def predicate(:aftr, {_q_s, q_e} = _query_interval, {i_s, _i_e} = _result_interval) do
     # TODO: should actually be: q_s <= q_e && q_e <= i_s && i_s <= i_e
     q_e <= i_s
   end
@@ -201,4 +203,19 @@ defmodule Tesseract.Tree.TB.Query do
     i_s <= q_e && q_s <= i_e
   end
 
+end
+
+defimpl Tesseract.Tree.Query, for: Tesseract.Tree.TB.Query  do
+  def ref(%Tesseract.Tree.TB.Query{} = query), do: query.ref
+
+  def select(%Tesseract.Tree.TB.Query{}, []), do: []
+
+  def select(%Tesseract.Tree.TB.Query{} = query, records) when is_list(records) do
+    case query.selection do
+      :label -> Enum.map(records, fn {:tb_record, label, _} -> label end)
+      :geometry -> Enum.map(records, fn {:tb_record, _, interval} -> interval end)
+      :record -> records
+      _ -> raise "Not implemented"
+    end
+  end
 end

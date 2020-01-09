@@ -17,7 +17,6 @@ defmodule Tesseract.Tree.MPB.InsertTest do
     # TODO: assert something :)
   end
 
-  @tag :mpb
   test "[MPB] Insert multiple entries into empty MPB-tree.", _ do
     points = [
       test: {{1, 1, 1, 1}, {2, 1, 1, 2}},
@@ -36,7 +35,6 @@ defmodule Tesseract.Tree.MPB.InsertTest do
     # assert MapSet.new(Node.records(root)) === MapSet.new(records)
   end
 
-  @tag :mpb
   test "[MPB] Insert 100 entries.", _ do
     points =
       1..100

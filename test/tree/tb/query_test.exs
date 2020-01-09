@@ -1,6 +1,7 @@
 defmodule Tesseract.Tree.TB.QueryTest do
+  alias Tesseract.Math.Interval
   alias Tesseract.Tree
-  alias Tesseract.Tree.TB.{Interval, Util, Query, Record}
+  alias Tesseract.Tree.TB.{Util, Query}
   alias Tesseract.Tree.Util.Insert
 
   use ExUnit.Case, async: true
@@ -21,17 +22,17 @@ defmodule Tesseract.Tree.TB.QueryTest do
   defp test_query_type(query_type, query_interval, intervals) do
     records = Insert.make_records(:tb, intervals, true)
     tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
-    query = apply(Query, query_type, [Query.select(:labels), query_interval])
+    query = apply(Query, query_type, [Query.select(:label), query_interval])
     results = Tree.query(tree, query)
 
-    expected_result_labels =
+    expected_labels =
       intervals
-      |> Enum.filter(fn {label, interval} -> 
+      |> Enum.filter(fn {_, interval} -> 
           Query.predicate(query_type, query_interval, interval)
         end)
       |> Keyword.keys()
 
-    assert Insert.results_contain_all_records?(results, records, expected_result_labels)
+    assert MapSet.new(expected_labels) === MapSet.new(results)
   end
 
   test "[TB] Query #0", _ do
@@ -46,10 +47,10 @@ defmodule Tesseract.Tree.TB.QueryTest do
 
     records = Insert.make_records(:tb, intervals, true)
     tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
-    query = Query.select(:labels) |> Query.during({0.2, 7.5})
+    query = Query.select(:label) |> Query.during({0.2, 7.5})
     results = Tree.query(tree, query)
 
-    assert true === Insert.results_contain_all_records?(results, records, [:test, :test2, :test5, :test6])
+    assert MapSet.new([:test, :test2, :test5, :test6]) === MapSet.new(results)
   end
 
   test "[TB] Query: type: equals.", _ do
@@ -60,20 +61,20 @@ defmodule Tesseract.Tree.TB.QueryTest do
     intervals = [test: {0, 0}]
     records = Insert.make_records(:tb, intervals, true)
     tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
-    query = Query.select(:labels) |> Query.equals({0, 0})
+    query = Query.select(:label) |> Query.equals({0, 0})
     results = Tree.query(tree, query)
 
-    assert true === Insert.results_contain_all_records?(results, records, [:test])
+    assert MapSet.new([:test]) === MapSet.new(results)
   end
 
   test "[TB] Query: type: equals, querying upper boundry.", _ do
     intervals = [test: {Util.lambda(), Util.lambda()}]
     records = Insert.make_records(:tb, intervals, true)
     tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
-    query = Query.select(:labels) |> Query.equals({Util.lambda(), Util.lambda()})
+    query = Query.select(:label) |> Query.equals({Util.lambda(), Util.lambda()})
     results = Tree.query(tree, query)
 
-    assert true === Insert.results_contain_all_records?(results, records, [:test])
+    assert MapSet.new([:test]) === MapSet.new(results)
   end
 
   test "[TB] Query test: starts.", _ do
@@ -125,7 +126,6 @@ defmodule Tesseract.Tree.TB.QueryTest do
     test_query_type(:contains, {3, 4})
   end
 
-  @tag :exec
   test "[TB] Query test: intersects.", _ do
     test_query_type(:intersects, {3.4, 4.5})
 
@@ -144,6 +144,56 @@ defmodule Tesseract.Tree.TB.QueryTest do
     test_query_type(:intersects, {1, 2}, intervals)
   end
 
+  test "[TB] Query selection: label", _ do
+    intervals = [
+      a: Interval.make(1, 4),
+      b: Interval.make(2, 6),
+      c: Interval.make(3, 8),
+      d: Interval.make(4, 5),
+      e: Interval.make(2, 4)
+    ]
+
+    records = Insert.make_records(:tb, intervals, true)
+    tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
+    query = Query.select(:label) |> Query.intersects({7, 9})
+    results = Tree.query(tree, query)
+
+    assert MapSet.new([:c]) === MapSet.new(results)
+  end
+
+  test "[TB] Query selection: geometry", _ do
+    intervals = [
+      a: Interval.make(1, 4),
+      b: Interval.make(2, 6),
+      c: Interval.make(3, 8),
+      d: Interval.make(4, 5),
+      e: Interval.make(2, 4)
+    ]
+
+    records = Insert.make_records(:tb, intervals, true)
+    tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
+    query = Query.select(:geometry) |> Query.intersects({7, 9})
+    results = Tree.query(tree, query)
+
+    assert results === [intervals[:c]]
+  end
+
+  test "[TB] Query selection: record", _ do
+    intervals = [
+      a: Interval.make(1, 4),
+      b: Interval.make(2, 6),
+      c: Interval.make(3, 8),
+      d: Interval.make(4, 5),
+      e: Interval.make(2, 4)
+    ]
+
+    records = Insert.make_records(:tb, intervals, true)
+    tree = Insert.make_tree_from_records(:tb, Keyword.values(records))
+    query = Query.select(:record) |> Query.intersects({7, 9})
+    results = Tree.query(tree, query)
+
+    assert results === [records[:c]]
+  end
 
   @tag :long_running
   test "[TB] Query test: 100x 1000 random queries on 1000 entries (on 1 tree)." do
@@ -161,14 +211,13 @@ defmodule Tesseract.Tree.TB.QueryTest do
         1..1000
         |> Enum.map(fn _ -> 
             q = {max(0, Util.lambda() - 1), Util.lambda()}
-            Query.select(:labels) |> Query.intersects(q)
+            Query.select(:geometry) |> Query.intersects(q)
         end)
         |> Enum.each(fn query -> 
             results = Tree.query(tree, query)
             query_interval = query.input_interval
             
             results
-            |> Enum.map(&Record.interval/1)
             |> Enum.all?(&Interval.intersects?(query_interval, &1))
             |> assert
         end)

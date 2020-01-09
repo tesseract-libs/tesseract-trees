@@ -1,7 +1,8 @@
 defmodule Tesseract.Tree.TB.InsertTest do
   alias Tesseract.Tree.Util.Insert
   alias Tesseract.Tree.TB
-  alias Tesseract.Tree.TB.{Node, Interval, Util}
+  alias Tesseract.Tree.TB.{Node, Util}
+  alias Tesseract.Math.Interval
 
   use ExUnit.Case, async: true
 

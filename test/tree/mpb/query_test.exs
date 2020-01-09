@@ -15,7 +15,7 @@ defmodule Tesseract.Tree.MPB.QueryTest do
     ]
 
     records = Insert.make_records(:mpb, points, true)
-    query = apply(Query, type, [Query.select(:labels), query_region])
+    query = apply(Query, type, [Query.select(:label), query_region])
     tree = Insert.make_tree_from_records(:mpb, Keyword.values(records))
 
     Tree.query(tree, query)
@@ -54,7 +54,6 @@ defmodule Tesseract.Tree.MPB.QueryTest do
     assert MapSet.new(results) === MapSet.new([:test])
   end
 
-  @tag :exec
   test "[MPB] Query type: intersects", _ do
     results = query(:intersects, {{0, 10}, {0, 10}, {0, 10}, {0, 3}})
     assert MapSet.new(results) === MapSet.new([:test, :test2, :test3, :test4, :test5])
@@ -62,6 +61,57 @@ defmodule Tesseract.Tree.MPB.QueryTest do
     results = query(:intersects, {{2, 2}, {1, 1}, {1, 1}, {2, 2}})
     assert MapSet.new(results) === MapSet.new([:test])
   end
+
+  test "[MPB] Query selection: label", _ do
+    points = [
+      test: {{1, 1, 1, 1}, {2, 1, 1, 2}},
+      test2: {{2, 2, 2, 1}, {2, 2, 3, 2}},
+      test3: {{3, 3, 3, 1}, {2, 3, 3, 2}},
+      test4: {{2, 3, 3, 1}, {1, 3, 3, 2}},
+      test5: {{1, 1, 2, 1}, {1, 1, 3, 2}}
+    ]
+
+    records = Insert.make_records(:mpb, points, true)
+    query = Query.select(:label) |> Query.intersects({{2, 2}, {1, 1}, {1 ,1}, {2, 2}})
+    tree = Insert.make_tree_from_records(:mpb, Keyword.values(records))
+    results = Tree.query(tree, query)
+
+    assert results === [:test]
+  end
+
+  # test "[MPB] Query selection: geometry", _ do
+  #   points = [
+  #     test: {{1, 1, 1, 1}, {2, 1, 1, 2}},
+  #     test2: {{2, 2, 2, 1}, {2, 2, 3, 2}},
+  #     test3: {{3, 3, 3, 1}, {2, 3, 3, 2}},
+  #     test4: {{2, 3, 3, 1}, {1, 3, 3, 2}},
+  #     test5: {{1, 1, 2, 1}, {1, 1, 3, 2}}
+  #   ]
+
+  #   records = Insert.make_records(:mpb, points, true)
+  #   query = Query.select(:geometry) |> Query.intersects({{2, 2}, {1, 1}, {1 ,1}, {2, 2}})
+  #   tree = Insert.make_tree_from_records(:mpb, Keyword.values(records))
+  #   results = Tree.query(tree, query)
+
+  #   assert results === [{{1, 2}, {1, 1}, {1, 1}, {1, 2}}]
+  # end
+
+  # test "[MPB] Query selection: record", _ do
+  #   points = [
+  #     test: {{1, 1, 1, 1}, {2, 1, 1, 2}},
+  #     test2: {{2, 2, 2, 1}, {2, 2, 3, 2}},
+  #     test3: {{3, 3, 3, 1}, {2, 3, 3, 2}},
+  #     test4: {{2, 3, 3, 1}, {1, 3, 3, 2}},
+  #     test5: {{1, 1, 2, 1}, {1, 1, 3, 2}}
+  #   ]
+
+  #   records = Insert.make_records(:mpb, points, true)
+  #   query = Query.select(:geometry) |> Query.intersects({{2, 2}, {1, 1}, {1 ,1}, {2, 2}})
+  #   tree = Insert.make_tree_from_records(:mpb, Keyword.values(records))
+  #   results = Tree.query(tree, query)
+
+  #   assert results === [records[:test]]
+  # end
 
   # test "[MPB] Query type: covers", _ do
   #   results = query(:covers, {{1, 2}, {1, 1}, {1, 1}, {1, 3}})

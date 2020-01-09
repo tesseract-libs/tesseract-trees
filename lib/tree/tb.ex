@@ -1,10 +1,7 @@
-# Triangular decomposition binary tree
-
-# NOTES:
-# - Allen described 13 distinct interval algebra (IA) relationships that may hold between pairs of intervals (Allen 1983)
-
+# TB = Triangular decomposition binary tree (a binary-tree form of TD-tree).
 defmodule Tesseract.Tree.TB do
   alias Tesseract.Tree.TB.{Node, Triangle, Record, Util, Query}
+  alias Tesseract.Tree
 
   # TODO: typespec!!
   def make(cfg \\ [max_records_per_node: 32]) do
@@ -13,38 +10,45 @@ defmodule Tesseract.Tree.TB do
 
   def root({:tb_tree, root, _}), do: root
 
-  def query({:tb_tree, root, cfg} = tree, %Query{query_box: query_rect} = query) do
+  def query({:tb_tree, root, cfg} = tree, %Query{query_box: query_rect} = query, cb \\ nil) do
     root_triangle = Node.triangle(root)
 
     if Util.node_intersects_query?(root, query_rect) do
-      query_node(root, query_rect)
+      result_records = query_node(root, query_rect, cb)
+      Tree.Query.select(query, result_records)
     else
       IO.puts "query does not intersect with root?"
       []
     end
   end
 
-  def query_node({:tb_node, nil, nil, _triangle, records}, query_rect) do
+  def query_node({:tb_node, nil, nil, _triangle, records}, query_rect, cb) do
+    test_predicate = fn record ->
+      Util.rectangle_contains_point?(query_rect, Record.interval(record))  
+    end
+
+    cb = if is_function(cb, 2) do
+      cb
+    else
+      fn record, acc ->
+        [record | acc] 
+      end
+    end
+
     records
-    |> Enum.filter(fn record -> 
-      Util.rectangle_contains_point?(query_rect, Record.interval(record))
-      # {{min_x, min_y}, {max_x, max_y}} = query_rect
-      # {px, py} = Record.interval(record)
-      # label = Record.label(record)
-      # IO.puts "RCP?: [#{label}] {{#{min_x}, #{min_y}}, {#{max_x}, #{max_y}}}, {#{px}, #{py}}: #{r}"
-      # r
-    end)
+    |> Enum.filter(test_predicate)
+    |> Enum.reduce([], cb)
   end
 
-  def query_node({:tb_node, left, right, _, _records}, query_rect) do
+  def query_node({:tb_node, left, right, _, _records}, query_rect, cb) do
     results_left = if Util.node_intersects_query?(left, query_rect) do
-      query_node(left, query_rect)
+      query_node(left, query_rect, cb)
     else
       []
     end
 
     results_right = if Util.node_intersects_query?(right, query_rect) do
-      query_node(right, query_rect)
+      query_node(right, query_rect, cb)
     else
       []
     end
