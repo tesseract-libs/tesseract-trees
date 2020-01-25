@@ -138,4 +138,32 @@ defmodule Tesseract.Tree.TB do
   
     end
   end
+
+  def delete({:tb_tree, root, cfg}, descriptor) do
+    {:tb_tree, delete_from_node(root, descriptor, cfg), cfg}
+  end
+
+  defp delete_from_node(root, descriptor, tree_cfg) do
+    interval = Record.interval(descriptor)
+
+    cond do
+      !Triangle.contains_point?(Node.triangle(root), interval) ->
+        root
+
+      Node.is_leaf?(root) ->
+        # TODO: handle leaf
+        # insert_into_leaf(root, record, cfg)
+
+      true ->
+        left_triangle = root |> Node.left |> Node.triangle
+
+        if Triangle.contains_point?(left_triangle, interval) do
+          Node.replace_left(root, delete_from_node(Node.left(root), descriptor, tree_cfg))
+        else
+          Node.replace_right(root, delete_from_node(Node.right(root), descriptor, tree_cfg))
+        end
+    end
+  end
+  
+  defp delete_from_leaf(leaf, descriptor, tree_cf)
 end

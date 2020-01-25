@@ -35,4 +35,6 @@ defmodule Tesseract.Tree.TB.Node do
 
   def is_internal?(node), do: !is_leaf?(node)
 
+  def is_empty?({:tb_node, _, _, _, records}), do: length(records) === 0
+
 end

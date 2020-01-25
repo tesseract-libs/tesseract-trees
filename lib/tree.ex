@@ -8,6 +8,8 @@ defprotocol Tesseract.Tree do
 
   def query(tree, query, cb \\ nil)
 
+  def delete(tree, descriptor)
+
 end
 
 defimpl Tesseract.Tree, for: Atom do
@@ -20,6 +22,7 @@ defimpl Tesseract.Tree, for: Atom do
   def type(_), do: raise "Not implemented"
   def insert(_, _), do: raise "Not implemented"
   def query(_, _, _), do: raise "Not implemented"
+  def delete(_, _), do: raise "Not implemented"
 end
 
 defimpl Tesseract.Tree, for: Tuple do
@@ -36,4 +39,7 @@ defimpl Tesseract.Tree, for: Tuple do
   def query(tree, query_rect, cb \\ nil)
   def query({:tb_tree, _, _} = tree, query_rect, cb), do: TB.query(tree, query_rect, cb)
   def query({:mpb_tree, _} = tree, query, _cb), do: MPB.query(tree, query)
+
+  def delete({:tb_tree, _, _} = tree, descriptor), do: TB.delete(tree, descriptor)
+
 end
